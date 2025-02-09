@@ -1,50 +1,70 @@
-# React + TypeScript + Vite
+# 📦 Управление бизнесом на маркетплейсах
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Этот проект — современное веб-приложение для управления бизнесом на маркетплейсах. Оно позволяет анализировать продажи, управлять заказами, следить за товарами и использовать AI для автоматизации.
 
-Currently, two official plugins are available:
+## 🚀 Функционал
+- 📊 **Аналитика продаж** — мониторинг ключевых метрик в реальном времени.
+- 📦 **Управление заказами** — контроль статусов и обработки.
+- 🛍 **Каталог товаров** — удобное управление ассортиментом.
+- ⭐ **Рекомендации** — AI-помощник для оптимизации продаж.
+- 🤖 **Автоматизация** — интеллектуальные инструменты для упрощения процессов.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔧 Установка и запуск
 
-## Expanding the ESLint configuration
+1. **Клонирование репозитория**:
+   ```sh
+   git clone https://github.com/true1853/snova.git
+   cd snova
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+2. **Установка зависимостей**:
+   ```sh
+   npm install  # или yarn install
+   ```
 
-- Configure the top-level `parserOptions` property like this:
+3. **Запуск приложения**:
+   ```sh
+   npm run dev  # или yarn dev
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 🛠 Технологии
+- **React** + **TypeScript**
+- **Ant Design** (UI-компоненты)
+- **React Router** (Навигация)
+- **Redux** (Состояние)
+- **Node.js / Express** (Backend)
+- **MongoDB / PostgreSQL** (База данных)
+- **AI-инструменты** для автоматизации
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 🎯 Целевая аудитория
+- Владельцы онлайн-магазинов на маркетплейсах (Ozon, Wildberries, Amazon и др.)
+- Менеджеры маркетплейс-бизнесов
+- Аналитики и маркетологи eCommerce
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## 📄 Лицензия
+Проект распространяется под лицензией MIT.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+---
+
+## 🔗 Подключение к GitHub
+
+1. **Инициализация репозитория** (если не создан):
+   ```sh
+   git init
+   git add .
+   git commit -m "Initial commit"
+   ```
+
+2. **Подключение удаленного репозитория**:
+   ```sh
+   git remote add origin https://github.com/true1853/snova.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+3. **Если репозиторий уже существует и нужно просто обновить код**:
+   ```sh
+   git add .
+   git commit -m "Обновление проекта"
+   git push origin main
+   ```
