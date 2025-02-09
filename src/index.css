@@ -1,0 +1,78 @@
+/* Ant Design global reset */
+@import 'antd/dist/reset.css';
+
+/* Default styles with Polar Green theme */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+.ant-layout-header {
+  background: #fff !important;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: none;
+  position: relative;
+  width: 100%;
+  height: auto;
+  z-index: auto;
+}
+
+.ant-input {
+  background: #fff !important;
+  border: 1px solid #52c41a !important; /* Polar Green */
+  color: #000 !important;
+}
+
+.ant-input::placeholder {
+  color: #bfbfbf !important;
+}
+
+.ant-badge .ant-badge-count {
+  background: #52c41a !important; /* Polar Green */
+}
+
+.ant-avatar {
+  border: 2px solid #52c41a !important; /* Polar Green */
+}
+
+.ant-btn-primary {
+  background: #52c41a !important;
+  border-color: #52c41a !important;
+}
+
+.ant-btn-primary:hover {
+  background: #409915 !important;
+  border-color: #409915 !important;
+}
+
+.ant-typography a {
+  color: #52c41a !important;
+}
+
+.ant-typography a:hover {
+  color: #409915 !important;
+}
+/* Основные стили для поддержки темной и светлой темы */
+:root {
+  --header-bg: #ffffff;
+  --sider-bg: #ffffff;
+}
+
+.dark-mode {
+  --header-bg: #141414;
+  --sider-bg: #001529;
+}
+
+/* Применение глобальных стилей */
+.ant-layout-header {
+  background: var(--header-bg) !important;
+}
+
+.ant-layout-sider {
+  background: var(--sider-bg) !important;
+}

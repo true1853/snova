@@ -1,0 +1,94 @@
+/* Основные стили для поддержки темной и светлой темы */
+:root {
+    --header-bg: #ffffff;
+    --sider-bg: #ffffff;
+  }
+  
+  .dark-mode {
+    --header-bg: #141414;
+    --sider-bg: #141414;
+  }
+  
+  /* Применение глобальных стилей */
+  .ant-layout-header {
+    background: var(--header-bg) !important;
+  }
+  
+  .ant-layout-sider {
+    background: var(--sider-bg) !important;
+  }
+  .dashboard-card {
+    background: #1f1f1f;
+    border-radius: 10px;
+    color: white;
+    padding: 16px;
+    maxHeight: "150px";
+  }
+  
+  .card-title {
+    color: #bfbfbf;
+    font-size: 14px;
+  }
+  
+  .card-statistic {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+  }
+  
+  .card-dynamic {
+    font-size: 14px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .card-dynamic.positive {
+    color: #52c41a;
+  }
+  
+  .card-dynamic.negative {
+    color: #cf1322;
+  }
+  
+  .card-divider {
+    border-color: #303030;
+  }
+  
+  .card-today {
+    color: #bfbfbf;
+    font-size: 14px;
+  }
+  
+  .card-today span {
+    color: white;
+    font-weight: bold;
+  }
+  
+  /* Стили для графиков */
+  .ant-chart {
+    background: none !important;
+  }
+  
+  .ant-area path {
+    fill: url(#chart-gradient);
+  }
+  
+  .ant-column rect {
+    fill: url(#chart-gradient);
+  }
+  
+  /* Градиент для графиков */
+  svg defs {
+    content: "";
+  }
+  
+  svg defs linearGradient {
+    stop:first-child {
+      stop-color: #8FFF00;
+    }
+    stop:last-child {
+      stop-color: rgba(143, 255, 0, 0);
+    }
+  }
+  

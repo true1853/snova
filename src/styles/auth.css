@@ -1,0 +1,99 @@
+/* Основной контейнер страницы авторизации */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #f0f2f5;
+  }
+  
+  .auth-container.dark-mode {
+    background: #141414;
+  }
+  
+  /* Контент внутри страницы */
+  .auth-content {
+    width: 400px;
+    text-align: center;
+  }
+  
+  /* Логотип */
+  .auth-logo {
+    margin-bottom: 20px;
+    width: 150px;
+  }
+  
+  /* Карточка формы */
+  .auth-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .auth-container.dark-mode .auth-card {
+    background: #1f1f1f;
+    color: white;
+  }
+  
+  /* Заголовок */
+  .auth-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #52c41a;
+  }
+  
+  /* Подзаголовок */
+  .auth-subtitle {
+    color: #888;
+    font-size: 14px;
+  }
+  
+  .auth-container.dark-mode .auth-subtitle {
+    color: #bfbfbf;
+  }
+  
+  /* Поля ввода */
+  .auth-input {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #d9d9d9;
+  }
+  
+  .auth-container.dark-mode .auth-input {
+    background: #1f1f1f;
+    color: white;
+    border: 1px solid #444;
+  }
+  
+  /* Иконки внутри инпутов */
+  .auth-icon {
+    color: #52c41a;
+  }
+  
+  /* Кнопка */
+  .auth-button {
+    margin-top: 10px;
+    background: #52c41a;
+    border-color: #52c41a;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .auth-button:hover {
+    background: #409911;
+    border-color: #409911;
+  }
+  
+  /* Переключение табов */
+  .ant-tabs-tab {
+    color: #52c41a !important;
+  }
+  
+  .auth-container.dark-mode .ant-tabs-tab {
+    color: #8fff00 !important;
+  }
+  
