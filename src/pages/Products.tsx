@@ -13,9 +13,15 @@ import {
   Dropdown,
   Menu,
   Select,
+  Descriptions,
+  Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { RobotOutlined, FilterOutlined, DownOutlined } from "@ant-design/icons";
+import {
+  RobotOutlined,
+  FilterOutlined,
+  EllipsisOutlined,
+} from "@ant-design/icons";
 
 interface Product {
   key: string;
@@ -38,7 +44,7 @@ const data: Product[] = [
     category: "Электроника",
     rating: 4.5,
     image:
-      "https://images.unsplash.com/photo-1738969773091-abcf274f7e0a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxODY2Nzh8MHwxfHJhbmRvbXx8fHx8fHx8fDE3Mzk1Njc4MDN8&ixlib=rb-4.0.3&q=80&w=1080",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbdaChGdZ9Vxfs-D-ruO3rp0FsZE0cNEIA6Q&s",
     description: "Описание смартфона XYZ",
     platform: "OZON",
   },
@@ -49,7 +55,8 @@ const data: Product[] = [
     brand: "Brand B",
     category: "Компьютеры",
     rating: 4.7,
-    image: "https://via.placeholder.com/50?text=ABC",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdD0YAMFhLDf9NqMAyb1QlmzKuxVDP4tlSRA&s",
     description: "Описание ноутбука ABC",
     platform: "WB",
   },
@@ -60,7 +67,8 @@ const data: Product[] = [
     brand: "Brand A",
     category: "Аудиотехника",
     rating: 4.2,
-    image: "https://via.placeholder.com/50?text=123",
+    image:
+      "https://www.sony.ru/image/dd18cf93606d238305a733d336c45537?fmt=pjpeg&wid=330&bgcolor=FFFFFF&bgc=FFFFFF",
     description: "Описание наушников 123",
     platform: "Яндекс Маркет",
   },
@@ -71,7 +79,8 @@ const data: Product[] = [
     brand: "Brand C",
     category: "Электроника",
     rating: 4.6,
-    image: "https://via.placeholder.com/50?text=4K",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXoT7nK1GW6R7Scqeb2WgpXdDbLOXsNyTRMg&s",
     description: "Описание телевизора 4K",
     platform: "KAZAN Express",
   },
@@ -82,7 +91,8 @@ const data: Product[] = [
     brand: "Brand D",
     category: "Планшеты",
     rating: 4.3,
-    image: "https://via.placeholder.com/50?text=LMN",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0nI3T4q2kAkMwg_F4x6y11yePxcHCgsyJrQ&s",
     description: "Описание планшета LMN",
     platform: "АВИТО",
   },
@@ -93,7 +103,8 @@ const data: Product[] = [
     brand: "Brand E",
     category: "Игры",
     rating: 4.8,
-    image: "https://via.placeholder.com/50?text=Console",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyKHgs_HJ2asAFSiYcjsbeaUEMrf92uxmacw&s",
     description: "Описание игровой консоли",
     platform: "OZON",
   },
@@ -104,7 +115,8 @@ const data: Product[] = [
     brand: "Brand F",
     category: "Фото",
     rating: 4.4,
-    image: "https://via.placeholder.com/50?text=2000",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYCyp3gPGUN82sWgck7573nHFnUPWvG2t8Rg&s",
     description: "Описание фотокамеры 2000",
     platform: "WB",
   },
@@ -115,23 +127,34 @@ const data: Product[] = [
     brand: "Brand A",
     category: "Гаджеты",
     rating: 4.1,
-    image: "https://via.placeholder.com/50?text=Watch",
+    image:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh-1SQe9FdPWsbIrq-Zszx74eTWPFSjMVCjg&s",
     description: "Описание смарт-часов",
     platform: "Яндекс Маркет",
   },
 ];
 
-const categories = [
-  "Электроника",
-  "Компьютеры",
-  "Аудиотехника",
-  "Планшеты",
-  "Игры",
-  "Фото",
-  "Гаджеты",
-];
+// Объекты для сопоставления цветов тегов
+const categoryColors: { [key: string]: string } = {
+  "Электроника": "blue",
+  "Компьютеры": "geekblue",
+  "Аудиотехника": "cyan",
+  "Планшеты": "green",
+  "Игры": "volcano",
+  "Фото": "magenta",
+  "Гаджеты": "purple",
+};
 
-const platforms = ["OZON", "WB", "Яндекс Маркет", "KAZAN Express", "АВИТО"];
+const platformColors: { [key: string]: string } = {
+  "OZON": "red",
+  "WB": "orange",
+  "Яндекс Маркет": "gold",
+  "KAZAN Express": "lime",
+  "АВИТО": "green",
+};
+
+const categories = Object.keys(categoryColors);
+const platforms = Object.keys(platformColors);
 
 const { useBreakpoint } = Grid;
 
@@ -169,9 +192,10 @@ const ProductsTable: React.FC = () => {
     console.log("Запуск AI для товара:", currentProduct);
     // Имитация асинхронного вызова API с задержкой 3 секунды
     setTimeout(() => {
-      // Обновляем текст описания, например, добавляя пометку
       const currentDescription = editForm.getFieldValue("description") || "";
-      editForm.setFieldsValue({ description: `${currentDescription} (улучшено AI)` });
+      editForm.setFieldsValue({
+        description: `${currentDescription} (улучшено AI)`,
+      });
       setAiLoading(false);
     }, 3000);
   };
@@ -182,7 +206,6 @@ const ProductsTable: React.FC = () => {
 
   const handleEditFormFinish = (values: any) => {
     console.log("Сохраненные значения:", values);
-    // Здесь можно обновить данные на сервере или в состоянии
     setDrawerVisible(false);
   };
 
@@ -269,6 +292,9 @@ const ProductsTable: React.FC = () => {
       key: "category",
       filters: categories.map((cat) => ({ text: cat, value: cat })),
       onFilter: (value, record) => record.category === value,
+      render: (category: string) => (
+        <Tag color={categoryColors[category] || "default"}>{category}</Tag>
+      ),
     },
     {
       title: "Рейтинг",
@@ -295,15 +321,16 @@ const ProductsTable: React.FC = () => {
       filters: platforms.map((plat) => ({ text: plat, value: plat })),
       onFilter: (value, record) => record.platform === value,
       sorter: (a, b) => a.platform.localeCompare(b.platform),
+      render: (platform: string) => (
+        <Tag color={platformColors[platform] || "default"}>{platform}</Tag>
+      ),
     },
     {
       title: "Действия",
       key: "actions",
       render: (_, record) => (
         <Dropdown overlay={getActionMenu(record)} trigger={["click"]}>
-          <Button>
-            Действия <DownOutlined />
-          </Button>
+          <Button icon={<EllipsisOutlined />} />
         </Dropdown>
       ),
     },
@@ -324,11 +351,9 @@ const ProductsTable: React.FC = () => {
         break;
       case "hide":
         console.log("Скрыть товар", record);
-        // Здесь можно добавить логику скрытия товара
         break;
       case "delete":
         console.log("Удалить товар", record);
-        // Здесь можно добавить логику удаления товара
         break;
       default:
         break;
@@ -353,35 +378,38 @@ const ProductsTable: React.FC = () => {
                   title={product.name}
                   extra={
                     <Dropdown overlay={getActionMenu(product)} trigger={["click"]}>
-                      <Button>
-                        Действия <DownOutlined />
-                      </Button>
+                      <Button icon={<EllipsisOutlined />} />
                     </Dropdown>
                   }
                 >
-                  <p>
-                    <strong>Цена:</strong> {product.price}
-                  </p>
-                  <p>
-                    <strong>Бренд:</strong> {product.brand}
-                  </p>
-                  <p>
-                    <strong>Категория:</strong> {product.category}
-                  </p>
-                  <p>
-                    <strong>Рейтинг:</strong> {product.rating}
-                  </p>
-                  <p>
-                    <strong>Площадка:</strong> {product.platform}
-                  </p>
-                  <p>
-                    <strong>Описание:</strong> {product.description}
-                  </p>
+                  <Descriptions column={1} size="small" bordered>
+                    <Descriptions.Item label="Цена">
+                      {product.price}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Бренд">
+                      {product.brand}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Категория">
+                      <Tag color={categoryColors[product.category] || "default"}>
+                        {product.category}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Рейтинг">
+                      {product.rating}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Площадка">
+                      <Tag color={platformColors[product.platform] || "default"}>
+                        {product.platform}
+                      </Tag>
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Описание">
+                      {product.description}
+                    </Descriptions.Item>
+                  </Descriptions>
                 </Card>
               </Col>
             ))}
           </Row>
-          {/* Плавающая кнопка для открытия фильтров */}
           <Button
             type="primary"
             shape="circle"
@@ -400,7 +428,6 @@ const ProductsTable: React.FC = () => {
         <Table columns={tableColumns} dataSource={data} />
       )}
 
-      {/* Drawer для редактирования товара */}
       <Drawer
         title={
           currentProduct
@@ -466,7 +493,6 @@ const ProductsTable: React.FC = () => {
         </Form>
       </Drawer>
 
-      {/* Drawer для фильтров (только для маленьких экранов) */}
       <Drawer
         title="Фильтры"
         placement="bottom"
