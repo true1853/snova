@@ -361,7 +361,8 @@ const ProductsTable: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: "16px" }}>
+    // Убрана обертка с padding, чтобы ant-layout-content не имел лишних отступов
+    <div>
       {isSmallScreen ? (
         <>
           <Row gutter={[16, 16]}>
@@ -425,7 +426,11 @@ const ProductsTable: React.FC = () => {
           />
         </>
       ) : (
-        <Table columns={tableColumns} dataSource={data} />
+        <Table
+          columns={tableColumns}
+          dataSource={data}
+          scroll={{ x: "max-content" }}
+        />
       )}
 
       <Drawer
