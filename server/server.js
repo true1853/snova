@@ -1,95 +1,117 @@
-import React, { useState } from "react";
-import { Layout, Card, Input, Button, Typography, Tabs, ConfigProvider, theme } from "antd";
-import { useNavigate } from "react-router-dom";
-import { LockOutlined, MailOutlined } from "@ant-design/icons";
-import axios from "axios";
-import "../styles/auth.css";
-import logo from "../assets/logo.svg";
+const express = require("express");
+const sqlite3 = require("sqlite3").verbose();
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const dotenv = require("dotenv").config();
 
-const { Text } = Typography;
-const { Content } = Layout;
+const app = express();
+const PORT = 5000;
+const SECRET_KEY = process.env.SECRET_KEY || "your_secret_key";
 
-const Auth: React.FC = () => {
-  const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const [error, setError] = useState("");
-  const [darkMode] = useState(true);
+app.use(express.json());
+app.use(cors());
 
-  const handleLogin = async (): Promise<void> => {
-    if (!email || !password) {
-      setError("Введите email и пароль");
-      return;
-    }
-    try {
-      const response = await axios.post("http://localhost:5000/api/login", { email, password });
-      localStorage.setItem("token", response.data.token);
-      navigate("/dashboard");
-    } catch (error) {
-      setError("Ошибка входа. Проверьте учетные данные.");
-    }
-  };
+// Подключение к базе данных SQLite
+const db = new sqlite3.Database("./database.db", (err) => {
+  if (err) console.error("Ошибка подключения к базе данных:", err.message);
+  else console.log("✅ Подключено к базе данных SQLite");
+});
 
-  const handleRegister = async (): Promise<void> => {
-    if (!email || !password) {
-      setError("Введите все поля для регистрации");
-      return;
-    }
-    try {
-      const response = await axios.post("http://localhost:5000/api/register", { email, password });
-      localStorage.setItem("token", response.data.token);
-      navigate("/dashboard");
-    } catch (error) {
-      setError("Ошибка регистрации. Попробуйте другой email.");
-    }
-  };
+// Создание таблицы refresh_tokens
+db.run("CREATE TABLE IF NOT EXISTS refresh_tokens (token TEXT UNIQUE)");
 
-  return (
-    <ConfigProvider
-      theme={{
-        algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-        token: {
-          colorPrimary: "#52c41a",
-          borderRadius: 8,
-          colorBgLayout: darkMode ? "#141414" : "#f0f2f5",
-          colorBgContainer: darkMode ? "#1f1f1f" : "white",
-          colorText: darkMode ? "white" : "black",
-        },
-      }}
-    >
-      <Layout className={darkMode ? "auth-container dark-mode" : "auth-container"} style={{ background: darkMode ? "#141414" : "#f0f2f5", display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", width: "100vw" }}>
-        <Content className="auth-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", maxWidth: "400px", textAlign: "center" }}>
-          <img src={logo} alt="Logo" style={{ maxWidth: "100%", height: "40px", marginBottom: "10px" }} />
-          <Text style={{ marginBottom: "20px" }}>Платформа для повышения эффективности вашего бизнеса на маркетплейсах</Text>
-          <Card className="auth-card" bordered={false} style={{ width: "100%", textAlign: "center" }}>
-            <Tabs defaultActiveKey="login" activeKey={activeTab} onChange={(key) => setActiveTab(key as "login" | "register")} centered>
-              <Tabs.TabPane tab="Вход" key="login">
-                <Text className="auth-title"> Вход в систему</Text>
-                <p className="auth-subtitle">Введите учетные данные для доступа</p>
-                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
-                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
-                {error && <Text type="danger">{error}</Text>}
-                <Button type="primary" block onClick={handleLogin} className="auth-button">
-                  Войти
-                </Button>
-              </Tabs.TabPane>
-              <Tabs.TabPane tab="Регистрация" key="register">
-                <Text className="auth-title">Регистрация</Text>
-                <p className="auth-subtitle">Создайте новый аккаунт</p>
-                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
-                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
-                {error && <Text type="danger">{error}</Text>}
-                <Button type="primary" block onClick={handleRegister} className="auth-button">
-                  Зарегистрироваться
-                </Button>
-              </Tabs.TabPane>
-            </Tabs>
-          </Card>
-        </Content>
-      </Layout>
-    </ConfigProvider>
-  );
+// Проверка токена
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Нет токена" });
+
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) return res.status(403).json({ error: "Токен недействителен" });
+    req.user = user;
+    next();
+  });
 };
 
-export default Auth;
+// Регистрация пользователя
+app.post("/api/register", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email и пароль обязательны" });
+  }
+
+  db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
+    if (user) {
+      return res.status(400).json({ error: "Email уже используется" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.run("INSERT INTO users (email, password) VALUES (?, ?)", [email, hashedPassword], function (err) {
+      if (err) {
+        return res.status(500).json({ error: "Ошибка при регистрации" });
+      }
+
+      const token = jwt.sign({ id: this.lastID, email }, SECRET_KEY, { expiresIn: "1h" });
+      res.json({ token });
+    });
+  });
+});
+
+// Вход в систему по email
+app.post("/api/login", (req, res) => {
+  const { email, password } = req.body;
+  db.get("SELECT * FROM users WHERE email = ?", [email], async (err, user) => {
+    if (err || !user) return res.status(401).json({ error: "Неверные учетные данные" });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(401).json({ error: "Неверный пароль" });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+    const refreshToken = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "7d" });
+    
+    db.run("INSERT INTO refresh_tokens (token) VALUES (?)", [refreshToken]);
+    res.json({ token, refreshToken });
+  });
+});
+
+// Обновление токена
+app.post("/api/refresh-token", (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) return res.status(401).json({ error: "Нет refresh токена" });
+
+  db.get("SELECT * FROM refresh_tokens WHERE token = ?", [refreshToken], (err, token) => {
+    if (err || !token) return res.status(403).json({ error: "Недействительный refresh токен" });
+
+    jwt.verify(refreshToken, SECRET_KEY, (err, user) => {
+      if (err) return res.status(403).json({ error: "Refresh токен недействителен" });
+
+      const newToken = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+      res.json({ token: newToken });
+    });
+  });
+});
+
+// Выход из системы (удаление refresh токена)
+app.post("/api/logout", (req, res) => {
+  const { refreshToken } = req.body;
+  db.run("DELETE FROM refresh_tokens WHERE token = ?", [refreshToken], (err) => {
+    if (err) return res.status(500).json({ error: "Ошибка при выходе" });
+    res.json({ message: "Выход выполнен успешно" });
+  });
+});
+
+// Получение данных аккаунта
+app.get("/api/account", authenticateToken, (req, res) => {
+  const userId = req.user.id;
+  db.get("SELECT email, avatar FROM users WHERE id = ?", [userId], (err, user) => {
+    if (err || !user) {
+      return res.status(500).json({ error: "Ошибка сервера" });
+    }
+    res.json(user);
+  });
+});
+
+// Запуск сервера
+app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));

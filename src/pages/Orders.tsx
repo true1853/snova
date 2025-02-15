@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useRef } from "react";
 import { Table, Input, Button, Space } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import type { ColumnType } from "antd/es/table";
@@ -40,32 +40,27 @@ const data: Order[] = [
     dataOtgruzki: "2025-02-05",
     klient: "Клиент 2",
   },
-  // Добавьте остальные заказы
 ];
 
 const OrdersTable: React.FC = () => {
-  // Удалили переменную searchText, так как она не используется
-  const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef<InputRef>(null);
 
-  // Функция для настройки поиска в столбце
   const getColumnSearchProps = (dataIndex: keyof Order): ColumnType<Order> => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+    filterDropdown: ({ setSelectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
           ref={searchInput}
           placeholder={`Поиск по ${dataIndex}`}
-          value={selectedKeys[0]}
           onChange={e =>
             setSelectedKeys(e.target.value ? [e.target.value] : [])
           }
-          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+          onPressEnter={() => handleSearch(confirm)}
           style={{ marginBottom: 8, display: "block" }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+            onClick={() => handleSearch(confirm)}
             icon={<SearchOutlined />}
             size="small"
             style={{ width: 90 }}
@@ -73,7 +68,7 @@ const OrdersTable: React.FC = () => {
             Найти
           </Button>
           <Button
-            onClick={() => handleReset(clearFilters!)}
+            onClick={() => handleReset(clearFilters)}
             size="small"
             style={{ width: 90 }}
           >
@@ -96,28 +91,16 @@ const OrdersTable: React.FC = () => {
     },
   });
 
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: (param?: FilterConfirmProps) => void,
-    dataIndex: keyof Order
-  ) => {
+  const handleSearch = (confirm: (param?: FilterConfirmProps) => void) => {
     confirm();
-    // Удаляем использование setSearchText, так как переменная больше не объявлена
-    setSearchedColumn(dataIndex as string);
   };
 
-  const handleReset = (clearFilters: () => void) => {
-    clearFilters();
-    // Нет необходимости сбрасывать searchText
+  const handleReset = (clearFilters?: () => void) => {
+    clearFilters?.();
   };
 
   const columns: ColumnType<Order>[] = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      sorter: (a, b) => a.id - b.id,
-    },
+    { title: "ID", dataIndex: "id", key: "id", sorter: (a, b) => a.id - b.id },
     {
       title: "Наименование",
       dataIndex: "naimenovanie",
@@ -132,37 +115,20 @@ const OrdersTable: React.FC = () => {
       sorter: (a, b) => a.artikul.localeCompare(b.artikul),
       ...getColumnSearchProps("artikul"),
     },
-    {
-      title: "Количество",
-      dataIndex: "kolichestvo",
-      key: "kolichestvo",
-      sorter: (a, b) => a.kolichestvo - b.kolichestvo,
-    },
-    {
-      title: "Стоимость",
-      dataIndex: "stoimost",
-      key: "stoimost",
-      sorter: (a, b) => a.stoimost - b.stoimost,
-    },
-    {
-      title: "Сумма",
-      dataIndex: "summa",
-      key: "summa",
-      sorter: (a, b) => a.summa - b.summa,
-    },
+    { title: "Количество", dataIndex: "kolichestvo", key: "kolichestvo", sorter: (a, b) => a.kolichestvo - b.kolichestvo },
+    { title: "Стоимость", dataIndex: "stoimost", key: "stoimost", sorter: (a, b) => a.stoimost - b.stoimost },
+    { title: "Сумма", dataIndex: "summa", key: "summa", sorter: (a, b) => a.summa - b.summa },
     {
       title: "Дата оплаты",
       dataIndex: "dataOplaty",
       key: "dataOplaty",
-      sorter: (a, b) =>
-        new Date(a.dataOplaty).getTime() - new Date(b.dataOplaty).getTime(),
+      sorter: (a, b) => new Date(a.dataOplaty).getTime() - new Date(b.dataOplaty).getTime(),
     },
     {
       title: "Дата отгрузки",
       dataIndex: "dataOtgruzki",
       key: "dataOtgruzki",
-      sorter: (a, b) =>
-        new Date(a.dataOtgruzki).getTime() - new Date(b.dataOtgruzki).getTime(),
+      sorter: (a, b) => new Date(a.dataOtgruzki).getTime() - new Date(b.dataOtgruzki).getTime(),
     },
     {
       title: "Клиент",
@@ -173,14 +139,7 @@ const OrdersTable: React.FC = () => {
     },
   ];
 
-  return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      pagination={{ pageSize: 10 }}
-    />
-  );
+  return <Table columns={columns} dataSource={data} rowKey="id" pagination={{ pageSize: 10 }} />;
 };
 
 export default OrdersTable;
