@@ -4,11 +4,6 @@
     min-height: 100vh;
   }
   
-  .account-content {
-    width: 100%;
-    max-width: 500px;
-  }
-  
   /* Карточка аккаунта */
   .account-card {
     background: #1f1f1f !important;

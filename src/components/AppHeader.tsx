@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Badge, Avatar, Menu, Dropdown } from "antd";
-import { QuestionCircleOutlined, BellOutlined, UserOutlined, SearchOutlined } from "@ant-design/icons";
+import { Layout, Badge, Avatar, Dropdown } from "antd";
+import {
+  QuestionCircleOutlined,
+  BellOutlined,
+  UserOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
@@ -25,29 +30,41 @@ const AppHeader: React.FC = () => {
     <Header
       style={{
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         alignItems: "center",
         padding: "10px 20px",
         background: "#001529",
         color: "white",
         width: "100%",
         maxWidth: "var(--appsider-width)",
-        margin: "0 auto"
+        margin: "0 auto",
       }}
     >
-      <img 
-        src="https://snova.pro/img/logo.svg" 
-        alt="Логотип" 
-        style={{ height: "40px", marginRight: "20px" }} 
-      />
+      {/* Логотип убран */}
+
       <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <SearchOutlined style={{ fontSize: "20px", cursor: "pointer" }} />
-        {!isMobile && <QuestionCircleOutlined style={{ fontSize: "20px", cursor: "pointer" }} />}
-        <Badge count={5}>
-          <BellOutlined style={{ fontSize: "20px", cursor: "pointer" }} />
+        <SearchOutlined
+          style={{ fontSize: "20px", cursor: "pointer"}}
+        />
+        {!isMobile && (
+          <QuestionCircleOutlined
+            style={{ fontSize: "20px", cursor: "pointer" }}
+          />
+        )}
+
+        {/* Счётчик уведомлений (Badge) в зелёном цвете */}
+        <Badge count={5} color="#52c41a">
+          <BellOutlined
+            style={{ fontSize: "20px", cursor: "pointer" }}
+          />
         </Badge>
+
+        {/* Аватар, также в зелёном стиле */}
         <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
-          <Avatar icon={<UserOutlined />} style={{ cursor: "pointer" }} />
+          <Avatar
+            icon={<UserOutlined style={{ color: "#fff" }} />}
+            style={{ cursor: "pointer" }}
+          />
         </Dropdown>
       </div>
     </Header>

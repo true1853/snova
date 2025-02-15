@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { Layout, Card, Input, Button, Typography, Tabs, ConfigProvider, theme } from "antd";
 import { useNavigate } from "react-router-dom";
-import { LockOutlined, UserOutlined, MailOutlined } from "@ant-design/icons";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import axios from "axios";
 import "../styles/auth.css";
+import logo from "../assets/logo.svg";
 
 const { Text } = Typography;
 const { Content } = Layout;
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
@@ -17,19 +18,31 @@ const Auth: React.FC = () => {
   const [darkMode] = useState(true);
 
   const handleLogin = async (): Promise<void> => {
-    if (!username || !password) {
-      setError("Введите имя пользователя и пароль");
+    if (!email || !password) {
+      setError("Введите email и пароль");
       return;
     }
-    navigate("/dashboard");
+    try {
+      const response = await axios.post("http://localhost:5000/api/login", { email, password });
+      localStorage.setItem("token", response.data.token);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Ошибка входа. Проверьте учетные данные.");
+    }
   };
 
   const handleRegister = async (): Promise<void> => {
-    if (!username || !email || !password) {
+    if (!email || !password) {
       setError("Введите все поля для регистрации");
       return;
     }
-    navigate("/dashboard");
+    try {
+      const response = await axios.post("http://localhost:5000/api/register", { email, password });
+      localStorage.setItem("token", response.data.token);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Ошибка регистрации. Попробуйте другой email.");
+    }
   };
 
   return (
@@ -37,7 +50,7 @@ const Auth: React.FC = () => {
       theme={{
         algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
-          colorPrimary: "#52c41a", // Polar Green
+          colorPrimary: "#52c41a",
           borderRadius: 8,
           colorBgLayout: darkMode ? "#141414" : "#f0f2f5",
           colorBgContainer: darkMode ? "#1f1f1f" : "white",
@@ -45,16 +58,17 @@ const Auth: React.FC = () => {
         },
       }}
     >
-      <Layout className={darkMode ? "auth-container dark-mode" : "auth-container"} style={{ background: darkMode ? "#141414" : "#f0f2f5" }}>
-        <Content className="auth-content">
-          <img src="https://snova.pro/img/logo.svg" alt="Logo" className="auth-logo" />
-          <Card className="auth-card" bordered={false}>
+      <Layout className={darkMode ? "auth-container dark-mode" : "auth-container"} style={{ background: darkMode ? "#141414" : "#f0f2f5", display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+        <Content className="auth-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "400px" }}>
+          <img src={logo} alt="Logo" style={{ maxWidth: "100%", height: "40px", marginBottom: "10px" }} />
+          <Text style={{ marginBottom: "20px", textAlign: "center" }}>Платформа для повышения эффективности вашего бизнеса на маркетплейсах</Text>
+          <Card className="auth-card" bordered={false} style={{ width: "100%" }}>
             <Tabs defaultActiveKey="login" activeKey={activeTab} onChange={(key) => setActiveTab(key as "login" | "register")} centered>
               <Tabs.TabPane tab="Вход" key="login">
                 <Text className="auth-title"> Вход в систему</Text>
                 <p className="auth-subtitle">Введите учетные данные для доступа</p>
-                <Input prefix={<UserOutlined className="auth-icon" />} placeholder="Имя пользователя" value={username} onChange={(e) => setUsername(e.target.value)} className="auth-input" style={{ background: darkMode ? "#333" : "white", color: darkMode ? "white" : "black" }} />
-                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ background: darkMode ? "#333" : "white", color: darkMode ? "white" : "black" }} />
+                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
                 {error && <Text type="danger">{error}</Text>}
                 <Button type="primary" block onClick={handleLogin} className="auth-button">
                   Войти
@@ -63,9 +77,8 @@ const Auth: React.FC = () => {
               <Tabs.TabPane tab="Регистрация" key="register">
                 <Text className="auth-title">Регистрация</Text>
                 <p className="auth-subtitle">Создайте новый аккаунт</p>
-                <Input prefix={<UserOutlined className="auth-icon" />} placeholder="Имя пользователя" value={username} onChange={(e) => setUsername(e.target.value)} className="auth-input" style={{ background: darkMode ? "#333" : "white", color: darkMode ? "white" : "black" }} />
-                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ background: darkMode ? "#333" : "white", color: darkMode ? "white" : "black" }} />
-                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ background: darkMode ? "#333" : "white", color: darkMode ? "white" : "black" }} />
+                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
                 {error && <Text type="danger">{error}</Text>}
                 <Button type="primary" block onClick={handleRegister} className="auth-button">
                   Зарегистрироваться

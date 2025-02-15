@@ -8,8 +8,8 @@ const { Content } = Layout;
 
 const AuthLayout: React.FC = () => {
   return (
-    <Layout style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f0f2f5" }}>
-      <Content style={{ width: 400, textAlign: "center" }}>
+    <Layout>
+      <Content>
         <Outlet />
       </Content>
     </Layout>

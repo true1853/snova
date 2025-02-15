@@ -1,120 +1,95 @@
-const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const cors = require("cors");
-const multer = require("multer");
-const path = require("path");
+import React, { useState } from "react";
+import { Layout, Card, Input, Button, Typography, Tabs, ConfigProvider, theme } from "antd";
+import { useNavigate } from "react-router-dom";
+import { LockOutlined, MailOutlined } from "@ant-design/icons";
+import axios from "axios";
+import "../styles/auth.css";
+import logo from "../assets/logo.svg";
 
-const app = express();
-const PORT = 5000;
-const SECRET_KEY = "your_secret_key";
+const { Text } = Typography;
+const { Content } = Layout;
 
-app.use(express.json());
-app.use(cors());
+const Auth: React.FC = () => {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [error, setError] = useState("");
+  const [darkMode] = useState(true);
 
-// Подключение к базе данных SQLite
-const db = new sqlite3.Database("./database.db", (err) => {
-  if (err) console.error("Ошибка подключения к базе данных:", err.message);
-  else console.log("✅ Подключено к базе данных SQLite");
-});
+  const handleLogin = async (): Promise<void> => {
+    if (!email || !password) {
+      setError("Введите email и пароль");
+      return;
+    }
+    try {
+      const response = await axios.post("http://localhost:5000/api/login", { email, password });
+      localStorage.setItem("token", response.data.token);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Ошибка входа. Проверьте учетные данные.");
+    }
+  };
 
-// Создание таблицы пользователей
-db.run(
-  `CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    email TEXT UNIQUE,
-    password TEXT,
-    avatar TEXT
-  )`
-);
+  const handleRegister = async (): Promise<void> => {
+    if (!email || !password) {
+      setError("Введите все поля для регистрации");
+      return;
+    }
+    try {
+      const response = await axios.post("http://localhost:5000/api/register", { email, password });
+      localStorage.setItem("token", response.data.token);
+      navigate("/dashboard");
+    } catch (error) {
+      setError("Ошибка регистрации. Попробуйте другой email.");
+    }
+  };
 
-// Проверка токена
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) return res.status(401).json({ error: "Нет токена" });
-
-  jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ error: "Токен недействителен" });
-    req.user = user;
-    next();
-  });
+  return (
+    <ConfigProvider
+      theme={{
+        algorithm: darkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+        token: {
+          colorPrimary: "#52c41a",
+          borderRadius: 8,
+          colorBgLayout: darkMode ? "#141414" : "#f0f2f5",
+          colorBgContainer: darkMode ? "#1f1f1f" : "white",
+          colorText: darkMode ? "white" : "black",
+        },
+      }}
+    >
+      <Layout className={darkMode ? "auth-container dark-mode" : "auth-container"} style={{ background: darkMode ? "#141414" : "#f0f2f5", display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", width: "100vw" }}>
+        <Content className="auth-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", maxWidth: "400px", textAlign: "center" }}>
+          <img src={logo} alt="Logo" style={{ maxWidth: "100%", height: "40px", marginBottom: "10px" }} />
+          <Text style={{ marginBottom: "20px" }}>Платформа для повышения эффективности вашего бизнеса на маркетплейсах</Text>
+          <Card className="auth-card" bordered={false} style={{ width: "100%", textAlign: "center" }}>
+            <Tabs defaultActiveKey="login" activeKey={activeTab} onChange={(key) => setActiveTab(key as "login" | "register")} centered>
+              <Tabs.TabPane tab="Вход" key="login">
+                <Text className="auth-title"> Вход в систему</Text>
+                <p className="auth-subtitle">Введите учетные данные для доступа</p>
+                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                {error && <Text type="danger">{error}</Text>}
+                <Button type="primary" block onClick={handleLogin} className="auth-button">
+                  Войти
+                </Button>
+              </Tabs.TabPane>
+              <Tabs.TabPane tab="Регистрация" key="register">
+                <Text className="auth-title">Регистрация</Text>
+                <p className="auth-subtitle">Создайте новый аккаунт</p>
+                <Input prefix={<MailOutlined className="auth-icon" />} placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                <Input.Password prefix={<LockOutlined className="auth-icon" />} placeholder="Пароль" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input" style={{ marginBottom: "10px" }} />
+                {error && <Text type="danger">{error}</Text>}
+                <Button type="primary" block onClick={handleRegister} className="auth-button">
+                  Зарегистрироваться
+                </Button>
+              </Tabs.TabPane>
+            </Tabs>
+          </Card>
+        </Content>
+      </Layout>
+    </ConfigProvider>
+  );
 };
 
-// Регистрация пользователя
-app.post("/api/register", async (req, res) => {
-  const { username, email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  db.run(
-    "INSERT INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)" ,
-    [username, email, hashedPassword, ""],
-    function (err) {
-      if (err) return res.status(400).json({ error: "Ошибка регистрации" });
-      res.json({ message: "Регистрация успешна" });
-    }
-  );
-});
-
-// Вход в систему
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-
-  db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
-    if (err || !user) return res.status(401).json({ error: "Неверные учетные данные" });
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(401).json({ error: "Неверный пароль" });
-
-    const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: "1h" });
-    res.json({ token });
-  });
-});
-
-// Получение данных аккаунта
-app.get("/api/account", authenticateToken, (req, res) => {
-  db.get("SELECT username, email, avatar FROM users WHERE id = ?", [req.user.id], (err, row) => {
-    if (err || !row) return res.status(404).json({ error: "Пользователь не найден" });
-    res.json(row);
-  });
-});
-
-// Обновление данных аккаунта
-app.post("/api/account", authenticateToken, async (req, res) => {
-  const { username, email, password, avatar } = req.body;
-  const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-
-  db.run(
-    `UPDATE users SET username = ?, email = ?, password = COALESCE(?, password), avatar = ? WHERE id = ?`,
-    [username, email, hashedPassword, avatar, req.user.id],
-    function (err) {
-      if (err) return res.status(400).json({ error: "Ошибка обновления данных" });
-      res.json({ message: "Данные успешно обновлены" });
-    }
-  );
-});
-
-// Настройки для загрузки аватаров
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-const upload = multer({ storage });
-
-app.post("/api/upload-avatar", authenticateToken, upload.single("avatar"), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: "Ошибка загрузки аватара" });
-
-  const avatarUrl = `/uploads/${req.file.filename}`;
-  db.run("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, req.user.id], (err) => {
-    if (err) return res.status(500).json({ error: "Ошибка сохранения аватара" });
-    res.json({ url: avatarUrl });
-  });
-});
-
-// Запуск сервера
-app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
+export default Auth;

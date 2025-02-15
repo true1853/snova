@@ -9,6 +9,7 @@ import Recommendations from "../pages/Recommendations";
 import Account from "../pages/Account";
 import AIHelp from "../pages/AIHelp";
 import Auth from "../pages/Auth";
+import Landing from "../pages/landing/Landing";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -16,9 +17,11 @@ const AppRoutes: React.FC = () => {
       {/* Авторизация (без основного лейаута) */}
       <Route path="/auth" element={<Auth />} />
 
-      {/* Основной лейаут для всех остальных страниц */}
+      {/* Лендинг */}
+      <Route path="/" element={<Landing />} />
+
+      {/* Основной лейаут для остальных страниц */}
       <Route element={<MainLayout />}>
-        <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/orders" element={<Orders />} />

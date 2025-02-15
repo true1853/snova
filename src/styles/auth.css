@@ -1,36 +1,22 @@
 /* Основной контейнер страницы авторизации */
-.auth-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: #f0f2f5;
-  }
-  
-  .auth-container.dark-mode {
-    background: #141414;
-  }
-  
-  /* Контент внутри страницы */
+/* Контент внутри страницы */
   .auth-content {
-    width: 400px;
     text-align: center;
   }
-  
-  /* Логотип */
-  .auth-logo {
-    margin-bottom: 20px;
-    width: 150px;
-  }
-  
+   
   /* Карточка формы */
   .auth-card {
-    background: white;
     border-radius: 10px;
     padding: 24px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
-  
+  .auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+  }
   .auth-container.dark-mode .auth-card {
     background: #1f1f1f;
     color: white;
@@ -96,4 +82,6 @@
   .auth-container.dark-mode .ant-tabs-tab {
     color: #8fff00 !important;
   }
+  
+
   
