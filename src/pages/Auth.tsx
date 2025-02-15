@@ -23,7 +23,7 @@ const Auth: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post("http://localhost:5000/api/login", { email, password });
+      const response = await axios.post("https://snova.pro/api/login", { email, password });
       localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
     } catch (error) {
@@ -37,7 +37,7 @@ const Auth: React.FC = () => {
       return;
     }
     try {
-      const response = await axios.post("http://localhost:5000/api/register", { email, password });
+      const response = await axios.post("https://snova.pro/api/register", { email, password });
       localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
     } catch (error) {
