@@ -58,7 +58,7 @@ const AppSider: React.FC<AppSiderProps> = ({ darkMode }) => {
             closable
             onClose={() => setDrawerVisible(false)}
             open={drawerVisible}
-            bodyStyle={{ padding: 0 }}
+            styles={{ body: { padding: 0 } }}
             title={
               <div style={{ textAlign: "center" }}>
                 <img src={logo} alt="Logo" style={{ maxWidth: "100%", height: "40px" }} />

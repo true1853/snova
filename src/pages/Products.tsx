@@ -1,547 +1,317 @@
 import React, { useState } from "react";
 import {
   Table,
+  Spin,
   Button,
   Drawer,
   Form,
   Input,
   InputNumber,
-  Card,
+  Select,
+  Checkbox,
   Row,
   Col,
-  Grid,
-  Dropdown,
-  Menu,
-  Select,
-  Descriptions,
-  Tag,
+  Space,
+  Popover,
 } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import {
-  RobotOutlined,
-  FilterOutlined,
-  EllipsisOutlined,
-} from "@ant-design/icons";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import { PlusOutlined, SettingOutlined } from "@ant-design/icons";
 
-interface Product {
-  key: string;
-  name: string;
-  price: number;
-  brand: string;
-  category: string;
-  rating: number;
-  image: string;
-  description: string;
-  platform: string;
-}
+const { Option } = Select;
 
-const data: Product[] = [
+const GET_PRODUCTS = gql`
+  query GetProducts($orderBy: String, $orderDir: String, $filter: JSON) {
+    products(orderBy: $orderBy, orderDir: $orderDir, filter: $filter) {
+      id
+      name
+      description
+      sku
+      barcode
+      price
+      currency
+      discount_price
+      stock_quantity
+      availability_status
+      brand
+      created_at
+      updated_at
+      is_active
+      category {
+        id
+        name
+      }
+      images {
+        id
+        url
+        alt_text
+      }
+    }
+  }
+`;
+
+const CREATE_PRODUCT = gql`
+  mutation CreateProduct(
+    $name: String!,
+    $description: String,
+    $sku: String,
+    $barcode: String,
+    $price: Float!,
+    $currency: String,
+    $discount_price: Float,
+    $stock_quantity: Int,
+    $availability_status: String,
+    $category_id: Int,
+    $brand: String,
+    $attributes: JSON,
+    $is_active: Boolean
+  ) {
+    createProduct(
+      name: $name,
+      description: $description,
+      sku: $sku,
+      barcode: $barcode,
+      price: $price,
+      currency: $currency,
+      discount_price: $discount_price,
+      stock_quantity: $stock_quantity,
+      availability_status: $availability_status,
+      category_id: $category_id,
+      brand: $brand,
+      attributes: $attributes,
+      is_active: $is_active
+    ) {
+      id
+      name
+      price
+      currency
+      created_at
+    }
+  }
+`;
+
+const date = new Date(1739713778469);
+console.log(date.toLocaleString());
+
+const ALL_COLUMNS = [
+  { title: "ID", dataIndex: "id", key: "id" },
+  { title: "Название", dataIndex: "name", key: "name" },
   {
-    key: "1",
-    name: "Смартфон XYZ",
-    price: 19999,
-    brand: "Brand A",
-    category: "Электроника",
-    rating: 4.5,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbdaChGdZ9Vxfs-D-ruO3rp0FsZE0cNEIA6Q&s",
-    description: "Описание смартфона XYZ",
-    platform: "OZON",
+    title: "Описание",
+    dataIndex: "description",
+    key: "description",
+    render: (text: string) => (text ? text.substring(0, 50) + "..." : ""),
+  },
+  { title: "SKU", dataIndex: "sku", key: "sku" },
+  { title: "Штрихкод", dataIndex: "barcode", key: "barcode" },
+  {
+    title: "Цена",
+    dataIndex: "price",
+    key: "price",
+    render: (price: number, record: any) => `${price} ${record.currency}`,
   },
   {
-    key: "2",
-    name: "Ноутбук ABC",
-    price: 55999,
-    brand: "Brand B",
-    category: "Компьютеры",
-    rating: 4.7,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdD0YAMFhLDf9NqMAyb1QlmzKuxVDP4tlSRA&s",
-    description: "Описание ноутбука ABC",
-    platform: "WB",
+    title: "Скидка",
+    dataIndex: "discount_price",
+    key: "discount_price",
+    render: (dp: number, record: any) =>
+      dp ? `${dp} ${record.currency}` : "-",
   },
+  { title: "Кол-во", dataIndex: "stock_quantity", key: "stock_quantity" },
   {
-    key: "3",
-    name: "Наушники 123",
-    price: 4999,
-    brand: "Brand A",
-    category: "Аудиотехника",
-    rating: 4.2,
-    image:
-      "https://www.sony.ru/image/dd18cf93606d238305a733d336c45537?fmt=pjpeg&wid=330&bgcolor=FFFFFF&bgc=FFFFFF",
-    description: "Описание наушников 123",
-    platform: "Яндекс Маркет",
+    title: "Статус",
+    dataIndex: "availability_status",
+    key: "availability_status",
   },
+  { title: "Бренд", dataIndex: "brand", key: "brand" },
   {
-    key: "4",
-    name: "Телевизор 4K",
-    price: 32999,
-    brand: "Brand C",
-    category: "Электроника",
-    rating: 4.6,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXoT7nK1GW6R7Scqeb2WgpXdDbLOXsNyTRMg&s",
-    description: "Описание телевизора 4K",
-    platform: "KAZAN Express",
+    title: "Категория",
+    dataIndex: "category",
+    key: "category",
+    render: (category: any) => (category ? category.name : ""),
   },
+  { title: "Создан", dataIndex: "created_at", key: "created_at" },
+  { title: "Обновлен", dataIndex: "updated_at", key: "updated_at" },
   {
-    key: "5",
-    name: "Планшет LMN",
-    price: 17999,
-    brand: "Brand D",
-    category: "Планшеты",
-    rating: 4.3,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0nI3T4q2kAkMwg_F4x6y11yePxcHCgsyJrQ&s",
-    description: "Описание планшета LMN",
-    platform: "АВИТО",
-  },
-  {
-    key: "6",
-    name: "Игровая консоль",
-    price: 24999,
-    brand: "Brand E",
-    category: "Игры",
-    rating: 4.8,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTyKHgs_HJ2asAFSiYcjsbeaUEMrf92uxmacw&s",
-    description: "Описание игровой консоли",
-    platform: "OZON",
-  },
-  {
-    key: "7",
-    name: "Фотокамера 2000",
-    price: 45999,
-    brand: "Brand F",
-    category: "Фото",
-    rating: 4.4,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYCyp3gPGUN82sWgck7573nHFnUPWvG2t8Rg&s",
-    description: "Описание фотокамеры 2000",
-    platform: "WB",
-  },
-  {
-    key: "8",
-    name: "Смарт-часы",
-    price: 9999,
-    brand: "Brand A",
-    category: "Гаджеты",
-    rating: 4.1,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh-1SQe9FdPWsbIrq-Zszx74eTWPFSjMVCjg&s",
-    description: "Описание смарт-часов",
-    platform: "Яндекс Маркет",
+    title: "Активен",
+    dataIndex: "is_active",
+    key: "is_active",
+    render: (isActive: boolean) => (isActive ? "Да" : "Нет"),
   },
 ];
 
-// Объекты для сопоставления цветов тегов
-const categoryColors: { [key: string]: string } = {
-  "Электроника": "blue",
-  "Компьютеры": "geekblue",
-  "Аудиотехника": "cyan",
-  "Планшеты": "green",
-  "Игры": "volcano",
-  "Фото": "magenta",
-  "Гаджеты": "purple",
-};
-
-const platformColors: { [key: string]: string } = {
-  "OZON": "red",
-  "WB": "orange",
-  "Яндекс Маркет": "gold",
-  "KAZAN Express": "lime",
-  "АВИТО": "green",
-};
-
-const categories = Object.keys(categoryColors);
-const platforms = Object.keys(platformColors);
-
-const { useBreakpoint } = Grid;
-
 const ProductsTable: React.FC = () => {
+  // Хуки вызываются в начале компонента
+  const [selectedColumns, setSelectedColumns] = useState(
+    ALL_COLUMNS.map((col) => col.key)
+  );
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
-  const [editForm] = Form.useForm();
-  const [aiLoading, setAiLoading] = useState(false);
+  const [form] = Form.useForm();
 
-  // Состояние для фильтров (для карточного отображения)
-  const [filterDrawerVisible, setFilterDrawerVisible] = useState(false);
-  const [filterForm] = Form.useForm();
-  const [filteredData, setFilteredData] = useState<Product[]>(data);
-
-  const screens = useBreakpoint();
-  const isSmallScreen = !screens.md;
-
-  const handleEdit = (record: Product) => {
-    setCurrentProduct(record);
-    editForm.setFieldsValue({
-      name: record.name,
-      price: record.price,
-      brand: record.brand,
-      category: record.category,
-      rating: record.rating,
-      image: record.image,
-      platform: record.platform,
-      description: record.description,
-    });
-    setDrawerVisible(true);
-  };
-
-  const handleLaunchAI = () => {
-    setAiLoading(true);
-    console.log("Запуск AI для товара:", currentProduct);
-    // Имитация асинхронного вызова API с задержкой 3 секунды
-    setTimeout(() => {
-      const currentDescription = editForm.getFieldValue("description") || "";
-      editForm.setFieldsValue({
-        description: `${currentDescription} (улучшено AI)`,
-      });
-      setAiLoading(false);
-    }, 3000);
-  };
-
-  const handleDrawerClose = () => {
-    setDrawerVisible(false);
-  };
-
-  const handleEditFormFinish = (values: any) => {
-    console.log("Сохраненные значения:", values);
-    setDrawerVisible(false);
-  };
-
-  // Фильтрация для карточного отображения
-  const handleFilterFinish = (values: any) => {
-    const filtered = data.filter((product) => {
-      if (
-        values.name &&
-        !product.name.toLowerCase().includes(values.name.toLowerCase())
-      )
-        return false;
-      if (
-        values.brand &&
-        !product.brand.toLowerCase().includes(values.brand.toLowerCase())
-      )
-        return false;
-      if (values.category && product.category !== values.category) return false;
-      if (values.platform && product.platform !== values.platform)
-        return false;
-      if (values.priceFrom && product.price < values.priceFrom) return false;
-      if (values.priceTo && product.price > values.priceTo) return false;
-      return true;
-    });
-    setFilteredData(filtered);
-    setFilterDrawerVisible(false);
-  };
-
-  const resetFilters = () => {
-    filterForm.resetFields();
-    setFilteredData(data);
-  };
-
-  const tableColumns: ColumnsType<Product> = [
-    {
-      title: "Изображение",
-      dataIndex: "image",
-      key: "image",
-      render: (image: string) => (
-        <img src={image} alt="товар" style={{ width: 50, height: 50 }} />
-      ),
+  // Apollo hooks для получения и создания продуктов
+  const { loading, error, data, refetch } = useQuery(GET_PRODUCTS, {
+    variables: { orderBy: "name", orderDir: "ASC", filter: {} },
+  });
+  const [createProduct] = useMutation(CREATE_PRODUCT, {
+    onCompleted: () => {
+      refetch();
+      setDrawerVisible(false);
+      form.resetFields();
     },
-    {
-      title: "Название",
-      dataIndex: "name",
-      key: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      filters: data
-        .map((p) => p.name)
-        .filter((v, i, a) => a.indexOf(v) === i)
-        .map((name) => ({ text: name, value: name })),
-      onFilter: (value, record) => record.name.includes(value as string),
+    onError: (err) => {
+      console.error("Ошибка создания продукта:", err);
     },
-    {
-      title: "Цена",
-      dataIndex: "price",
-      key: "price",
-      sorter: (a, b) => a.price - b.price,
-      filters: [
-        { text: "До 10 000", value: "lt10000" },
-        { text: "10 000 - 30 000", value: "10to30" },
-        { text: "Более 30 000", value: "gt30000" },
-      ],
-      onFilter: (value, record) => {
-        if (value === "lt10000") return record.price < 10000;
-        if (value === "10to30")
-          return record.price >= 10000 && record.price <= 30000;
-        if (value === "gt30000") return record.price > 30000;
-        return false;
-      },
-    },
-    {
-      title: "Бренд",
-      dataIndex: "brand",
-      key: "brand",
-      filters: data
-        .map((p) => p.brand)
-        .filter((v, i, a) => a.indexOf(v) === i)
-        .map((brand) => ({ text: brand, value: brand })),
-      onFilter: (value, record) => record.brand === value,
-    },
-    {
-      title: "Категория",
-      dataIndex: "category",
-      key: "category",
-      filters: categories.map((cat) => ({ text: cat, value: cat })),
-      onFilter: (value, record) => record.category === value,
-      render: (category: string) => (
-        <Tag color={categoryColors[category] || "default"}>{category}</Tag>
-      ),
-    },
-    {
-      title: "Рейтинг",
-      dataIndex: "rating",
-      key: "rating",
-      sorter: (a, b) => a.rating - b.rating,
-      filters: [
-        { text: "4 и выше", value: "4up" },
-        { text: "3 - 4", value: "3to4" },
-        { text: "Ниже 3", value: "below3" },
-      ],
-      onFilter: (value, record) => {
-        if (value === "4up") return record.rating >= 4;
-        if (value === "3to4")
-          return record.rating >= 3 && record.rating < 4;
-        if (value === "below3") return record.rating < 3;
-        return false;
-      },
-    },
-    {
-      title: "Площадка",
-      dataIndex: "platform",
-      key: "platform",
-      filters: platforms.map((plat) => ({ text: plat, value: plat })),
-      onFilter: (value, record) => record.platform === value,
-      sorter: (a, b) => a.platform.localeCompare(b.platform),
-      render: (platform: string) => (
-        <Tag color={platformColors[platform] || "default"}>{platform}</Tag>
-      ),
-    },
-    {
-      title: "Действия",
-      key: "actions",
-      render: (_, record) => (
-        <Dropdown overlay={getActionMenu(record)} trigger={["click"]}>
-          <Button icon={<EllipsisOutlined />} />
-        </Dropdown>
-      ),
-    },
-  ];
+  });
 
-  const getActionMenu = (record: Product) => (
-    <Menu onClick={(e) => handleActionClick(record, e)}>
-      <Menu.Item key="edit">Редактировать</Menu.Item>
-      <Menu.Item key="hide">Скрыть</Menu.Item>
-      <Menu.Item key="delete">Удалить</Menu.Item>
-    </Menu>
+  // Лоадер по центру страницы, если данные загружаются
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Spin size="large" tip="Загрузка данных..." />
+      </div>
+    );
+  }
+  if (error) return <p>Ошибка: {error.message}</p>;
+
+  // Фильтрация столбцов на основе выбранных пользователем значений
+  const columns = ALL_COLUMNS.filter((col) =>
+    selectedColumns.includes(col.key)
   );
 
-  const handleActionClick = (record: Product, e: any) => {
-    switch (e.key) {
-      case "edit":
-        handleEdit(record);
-        break;
-      case "hide":
-        console.log("Скрыть товар", record);
-        break;
-      case "delete":
-        console.log("Удалить товар", record);
-        break;
-      default:
-        break;
-    }
+  // Функция создания продукта через Drawer
+  const handleCreate = (values: any) => {
+    createProduct({
+      variables: {
+        name: values.name,
+        description: values.description,
+        sku: values.sku,
+        barcode: values.barcode,
+        price: values.price,
+        currency: values.currency || "USD",
+        discount_price: values.discount_price,
+        stock_quantity: values.stock_quantity,
+        availability_status: values.availability_status,
+        category_id: values.category_id,
+        brand: values.brand,
+        attributes: values.attributes,
+        is_active: values.is_active,
+      },
+    });
   };
 
-  return (
-    // Убрана обертка с padding, чтобы ant-layout-content не имел лишних отступов
-    <div>
-      {isSmallScreen ? (
-        <>
-          <Row gutter={[16, 16]}>
-            {filteredData.map((product) => (
-              <Col xs={24} sm={12} key={product.key}>
-                <Card
-                  cover={
-                    <img
-                      alt={product.name}
-                      src={product.image}
-                      style={{ height: 150, objectFit: "cover" }}
-                    />
-                  }
-                  title={product.name}
-                  extra={
-                    <Dropdown overlay={getActionMenu(product)} trigger={["click"]}>
-                      <Button icon={<EllipsisOutlined />} />
-                    </Dropdown>
-                  }
-                >
-                  <Descriptions column={1} size="small" bordered>
-                    <Descriptions.Item label="Цена">
-                      {product.price}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Бренд">
-                      {product.brand}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Категория">
-                      <Tag color={categoryColors[product.category] || "default"}>
-                        {product.category}
-                      </Tag>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Рейтинг">
-                      {product.rating}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Площадка">
-                      <Tag color={platformColors[product.platform] || "default"}>
-                        {product.platform}
-                      </Tag>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Описание">
-                      {product.description}
-                    </Descriptions.Item>
-                  </Descriptions>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-          <Button
-            type="primary"
-            shape="circle"
-            icon={<FilterOutlined />}
-            size="large"
-            style={{
-              position: "fixed",
-              bottom: 20,
-              right: 20,
-              zIndex: 1000,
-            }}
-            onClick={() => setFilterDrawerVisible(true)}
-          />
-        </>
-      ) : (
-        <Table
-          columns={tableColumns}
-          dataSource={data}
-          scroll={{ x: "max-content" }}
-        />
-      )}
+  // Контент для Popover с выбором столбцов (спрятан за кнопкой с иконкой шестерёнки)
+  const columnSelectContent = (
+    <Select
+      mode="multiple"
+      placeholder="Выберите столбцы"
+      style={{ minWidth: 300 }}
+      value={selectedColumns}
+      onChange={(value) => setSelectedColumns(value)}
+    >
+      {ALL_COLUMNS.map((col) => (
+        <Option key={col.key} value={col.key}>
+          {col.title}
+        </Option>
+      ))}
+    </Select>
+  );
 
+  return (
+    <div style={{ padding: "20px" }}>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Col>
+          <Popover content={columnSelectContent} title="Выберите столбцы">
+            <Button icon={<SettingOutlined />} />
+          </Popover>
+        </Col>
+        <Col>
+          <Space>
+            <Button onClick={() => refetch()}>Обновить</Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setDrawerVisible(true)}
+            >
+              Добавить
+            </Button>
+          </Space>
+        </Col>
+      </Row>
+      <Table
+        columns={columns}
+        dataSource={data.products}
+        rowKey="id"
+        scroll={{ x: "max-content" }}
+      />
       <Drawer
-        title={
-          currentProduct
-            ? `Редактировать товар: ${currentProduct.name}`
-            : "Редактировать товар"
-        }
+        title="Добавить новый продукт"
         placement="right"
-        onClose={handleDrawerClose}
+        onClose={() => setDrawerVisible(false)}
         visible={drawerVisible}
         width={400}
       >
-        <Form form={editForm} layout="vertical" onFinish={handleEditFormFinish}>
-          <Form.Item label="Название" name="name">
+        <Form form={form} layout="vertical" onFinish={handleCreate}>
+          <Form.Item
+            label="Название"
+            name="name"
+            rules={[{ required: true, message: "Введите название" }]}
+          >
             <Input />
-          </Form.Item>
-          <Form.Item label="Цена" name="price">
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item label="Бренд" name="brand">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Категория" name="category">
-            <Select placeholder="Выберите категорию">
-              {categories.map((cat) => (
-                <Select.Option key={cat} value={cat}>
-                  {cat}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label="Рейтинг" name="rating">
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item label="Изображение (URL)" name="image">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Площадка" name="platform">
-            <Select placeholder="Выберите площадку">
-              {platforms.map((plat) => (
-                <Select.Option key={plat} value={plat}>
-                  {plat}
-                </Select.Option>
-              ))}
-            </Select>
           </Form.Item>
           <Form.Item label="Описание" name="description">
-            <Input.TextArea rows={4} />
+            <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item>
-            <Button
-              type="default"
-              icon={<RobotOutlined />}
-              onClick={handleLaunchAI}
-              loading={aiLoading}
-              style={{ marginBottom: 16 }}
-            >
-              Запустить AI
-            </Button>
-            <Button type="primary" htmlType="submit" block>
-              Сохранить изменения
-            </Button>
+          <Form.Item label="SKU" name="sku">
+            <Input />
           </Form.Item>
-        </Form>
-      </Drawer>
-
-      <Drawer
-        title="Фильтры"
-        placement="bottom"
-        onClose={() => setFilterDrawerVisible(false)}
-        visible={filterDrawerVisible}
-        height={300}
-      >
-        <Form form={filterForm} layout="vertical" onFinish={handleFilterFinish}>
-          <Form.Item label="Название" name="name">
-            <Input placeholder="Введите название" />
+          <Form.Item label="Штрихкод" name="barcode">
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Цена"
+            name="price"
+            rules={[{ required: true, message: "Введите цену" }]}
+          >
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item label="Валюта" name="currency" initialValue="USD">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Цена со скидкой" name="discount_price">
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item label="Кол-во" name="stock_quantity">
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item label="Статус наличия" name="availability_status">
+            <Input />
+          </Form.Item>
+          <Form.Item label="ID категории" name="category_id">
+            <InputNumber style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item label="Бренд" name="brand">
-            <Input placeholder="Введите бренд" />
+            <Input />
           </Form.Item>
-          <Form.Item label="Категория" name="category">
-            <Select placeholder="Выберите категорию" allowClear>
-              {categories.map((cat) => (
-                <Select.Option key={cat} value={cat}>
-                  {cat}
-                </Select.Option>
-              ))}
-            </Select>
+          <Form.Item label="Атрибуты (JSON)" name="attributes">
+            <Input.TextArea rows={2} placeholder='{"key": "value"}' />
           </Form.Item>
-          <Form.Item label="Площадка" name="platform">
-            <Select placeholder="Выберите площадку" allowClear>
-              {platforms.map((plat) => (
-                <Select.Option key={plat} value={plat}>
-                  {plat}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label="Цена от" name="priceFrom">
-            <InputNumber style={{ width: "100%" }} min={0} />
-          </Form.Item>
-          <Form.Item label="Цена до" name="priceTo">
-            <InputNumber style={{ width: "100%" }} min={0} />
+          <Form.Item
+            label="Активен"
+            name="is_active"
+            valuePropName="checked"
+            initialValue
+          >
+            <Checkbox />
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              Применить фильтры
-            </Button>
-            <Button style={{ marginTop: 8 }} onClick={resetFilters} block>
-              Сбросить фильтры
+              Сохранить
             </Button>
           </Form.Item>
         </Form>

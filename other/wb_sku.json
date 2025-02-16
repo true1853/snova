@@ -1,0 +1,38 @@
+[
+    {
+      "nmID": 11111111,
+      "vendorCode": "wbiz72wmro",
+      "brand": "",
+      "title": "Свитер женский оверсайз с горлом",
+      "description": "12345",
+      "dimensions": {
+        "length": 0,
+        "width": 0,
+        "height": 0
+      },
+      "characteristics": [
+        {
+          "id": 14177450,
+          "value": [
+            "хлопок 50% акрил 50%"
+          ]
+        },
+        {
+          "id": 50,
+          "value": [
+            "свободный крой"
+          ]
+        }
+      ],
+      "sizes": [
+        {
+          "chrtID": 12345678,
+          "techSize": "ONE SIZE",
+          "wbSize": "78-90",
+          "skus": [
+            "123487653460134"
+          ]
+        }
+      ]
+    }
+  ]
