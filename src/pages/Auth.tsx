@@ -17,8 +17,8 @@ const Auth: React.FC = () => {
   const [error, setError] = useState("");
   const [darkMode] = useState(true);
 
-  // URL нового GraphQL-сервера (например, https://snova.pro/graphql)
-  const GRAPHQL_URL = "http://localhost:4000/graphql";
+  // URL GraphQL-сервера
+  const GRAPHQL_URL = "/graphql";
 
   const handleLogin = async (): Promise<void> => {
     if (!email || !password) {
@@ -30,33 +30,42 @@ const Auth: React.FC = () => {
         mutation LoginUser($email: String!, $password: String!) {
           loginUser(email: $email, password: $password) {
             token
+            user {
+              id
+              name
+            }
           }
         }
       `;
-      const response = await axios.post(GRAPHQL_URL, {
-        query,
-        variables: { email, password }
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
-      const token = response.data.data?.loginUser?.token;
-      if (!token) {
-        throw new Error("No token received");
+      const response = await axios.post(
+        GRAPHQL_URL,
+        {
+          query,
+          variables: { email, password },
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const { token, user } = response.data.data?.loginUser || {};
+      if (!token || !user?.id) {
+        throw new Error("Некорректный ответ сервера");
       }
+      // Сохраняем токен и userId (приводим к строке, если нужно)
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", String(user.id));
       navigate("/dashboard");
     } catch (err) {
       setError("Ошибка входа. Проверьте учетные данные.");
     }
   };
   
+
   const handleRegister = async (): Promise<void> => {
     if (!email || !password) {
       setError("Введите все поля для регистрации");
       return;
     }
     try {
-      const query = `
+      const registerQuery = `
         mutation CreateUser($name: String!, $email: String!, $password: String!) {
           createUser(name: $name, email: $email, password: $password) {
             id
@@ -67,27 +76,33 @@ const Auth: React.FC = () => {
         }
       `;
       const variables = { name: email, email, password };
-      const response = await axios.post(GRAPHQL_URL, { query, variables }, {
-        headers: { "Content-Type": "application/json" }
-      });
-      // Если сервер не возвращает токен сразу, выполняем вход:
-      const tokenResponse = await axios.post(GRAPHQL_URL, {
-        query: `
-          mutation LoginUser($email: String!, $password: String!) {
-            loginUser(email: $email, password: $password) {
-              token
+      await axios.post(
+        GRAPHQL_URL,
+        { query: registerQuery, variables },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      // Если сервер не возвращает токен сразу после регистрации, выполняем вход
+      const loginQuery = `
+        mutation LoginUser($email: String!, $password: String!) {
+          loginUser(email: $email, password: $password) {
+            token
+            user {
+              id
             }
           }
-        `,
-        variables: { email, password }
-      }, {
-        headers: { "Content-Type": "application/json" }
-      });
-      const token = tokenResponse.data.data?.loginUser?.token;
-      if (!token) {
-        throw new Error("Registration succeeded, but no token received");
+        }
+      `;
+      const tokenResponse = await axios.post(
+        GRAPHQL_URL,
+        { query: loginQuery, variables: { email, password } },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const { token, user } = tokenResponse.data.data?.loginUser || {};
+      if (!token || !user?.id) {
+        throw new Error("Регистрация прошла успешно, но токен не получен");
       }
       localStorage.setItem("token", token);
+      localStorage.setItem("userId", user.id);
       navigate("/dashboard");
     } catch (err) {
       setError("Ошибка регистрации. Попробуйте другой email.");
@@ -117,7 +132,10 @@ const Auth: React.FC = () => {
           height: "100vh",
         }}
       >
-        <Content className="auth-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "400px" }}>
+        <Content
+          className="auth-content"
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", maxWidth: "400px" }}
+        >
           <img src={logo} alt="Logo" style={{ maxWidth: "100%", height: "40px", marginBottom: "10px" }} />
           <Text style={{ marginBottom: "20px", textAlign: "center" }}>
             Платформа для повышения эффективности вашего бизнеса на маркетплейсах

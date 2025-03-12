@@ -25,10 +25,15 @@ const { Content } = Layout;
 
 const Account: React.FC = () => {
   const { token } = useAuth() || {};
+  // Получаем userId из localStorage (он должен сохраняться при логине)
+  const userId = localStorage.getItem("userId");
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [ozonClientId, setOzonClientId] = useState("");
+  const [ozonApiKey, setOzonApiKey] = useState("");
 
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [storeModalVisible, setStoreModalVisible] = useState(false);
@@ -40,24 +45,43 @@ const Account: React.FC = () => {
   const [invoiceAmount, setInvoiceAmount] = useState("");
 
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  // Если хотите сделать адаптивную высоту для карточек:
   const cardStyle = { width: "100%", minHeight: isMobile ? "auto" : "350px" };
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        if (!token) return;
-        const response = await fetch("/api/account", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+        if (!token || !userId) return;
+        const query = `
+          query GetUser($id: ID!) {
+            user(id: $id) {
+              id
+              name
+              email
+              avatar
+              ozon_client_id
+              ozon_api_key
+            }
+          }
+        `;
+        const variables = { id: userId };
+        const response = await fetch("/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ query, variables }),
         });
         if (!response.ok) {
           throw new Error("Ошибка загрузки данных");
         }
-        const data = await response.json();
-        setUsername(data.username);
+        const result = await response.json();
+        const data = result.data.user;
+        setUsername(data.name);
         setEmail(data.email);
         setAvatar(data.avatar);
+        if (data.ozon_client_id) setOzonClientId(data.ozon_client_id);
+        if (data.ozon_api_key) setOzonApiKey(data.ozon_api_key);
       } catch (error) {
         console.error("❌ Ошибка при загрузке данных:", error);
         message.error("Произошла ошибка, попробуйте позже.");
@@ -65,16 +89,113 @@ const Account: React.FC = () => {
     };
 
     fetchUserData();
-  }, [token]);
+  }, [token, userId]);
+
+  // Функция для обновления данных пользователя
+  const handleUpdateUser = async () => {
+    if (!token || !userId) {
+      message.error("Пользователь не авторизован");
+      return;
+    }
+    const mutation = `
+      mutation UpdateUser($id: ID!, $name: String, $email: String, $password: String, $avatar: String) {
+        updateUser(id: $id, name: $name, email: $email, password: $password, avatar: $avatar) {
+          id
+          name
+          email
+          avatar
+        }
+      }
+    `;
+    const variables = {
+      id: userId,
+      name: username,
+      email: email,
+      // Если поле password пустое, можно не передавать его
+      password: password || undefined,
+      avatar: avatar,
+    };
+    try {
+      const response = await fetch("/graphql", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ query: mutation, variables }),
+      });
+      if (!response.ok) {
+        throw new Error("Ошибка обновления данных");
+      }
+      const result = await response.json();
+      const updatedUser = result.data.updateUser;
+      setUsername(updatedUser.name);
+      setEmail(updatedUser.email);
+      setAvatar(updatedUser.avatar);
+      message.success("Данные обновлены");
+      // Очистка поля пароля после обновления
+      setPassword("");
+    } catch (error) {
+      console.error("Ошибка обновления пользователя:", error);
+      message.error("Ошибка обновления данных пользователя");
+    }
+  };
+
+  const connectStore = async () => {
+    if (!userId) {
+      message.error("Пользователь не авторизован");
+      return;
+    }
+    if (selectedStore === "OZON") {
+      if (!ozonClientId || !ozonApiKey) {
+        message.error("Пожалуйста, заполните ozon_client_id и ozon_api_key");
+        return;
+      }
+      const mutation = `
+        mutation UpdateUser($id: ID!, $ozon_client_id: String, $ozon_api_key: String) {
+          updateUser(id: $id, ozon_client_id: $ozon_client_id, ozon_api_key: $ozon_api_key) {
+            id
+            ozon_client_id
+            ozon_api_key
+          }
+        }
+      `;
+      const variables = {
+        id: userId,
+        ozon_client_id: ozonClientId,
+        ozon_api_key: ozonApiKey,
+      };
+      try {
+        const response = await fetch("/graphql", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ query: mutation, variables }),
+        });
+        if (!response.ok) {
+          throw new Error("Ошибка подключения магазина");
+        }
+        const result = await response.json();
+        const updatedUser = result.data.updateUser;
+        setOzonClientId(updatedUser.ozon_client_id);
+        setOzonApiKey(updatedUser.ozon_api_key);
+        message.success(`Магазин ${selectedStore} подключен`);
+      } catch (error) {
+        console.error("❌ Ошибка при подключении магазина:", error);
+        message.error("Ошибка при подключении магазина");
+      }
+    } else {
+      message.success(`Магазин ${selectedStore} подключен`);
+    }
+    setStoreModalVisible(false);
+  };
 
   return (
     <Layout className="account-container">
       <Content className="account-content" style={{ padding: "20px 0" }}>
-        <Row
-          gutter={[16, 16]}
-          justify="center"
-          style={{ maxWidth: "1200px", margin: "0 auto" }}
-        >
+        <Row gutter={[16, 16]} justify="center" style={{ maxWidth: "1200px", margin: "0 auto" }}>
           {/* 1-я колонка: Аккаунт */}
           <Col xs={24} sm={24} md={8} style={{ minWidth: "300px" }}>
             <Card className="account-card" title="Аккаунт" style={cardStyle}>
@@ -115,7 +236,7 @@ const Account: React.FC = () => {
                 className="account-input"
                 style={{ marginBottom: 8 }}
               />
-              <Button type="primary" block className="account-button">
+              <Button type="primary" block className="account-button" onClick={handleUpdateUser}>
                 Сохранить
               </Button>
             </Card>
@@ -123,19 +244,19 @@ const Account: React.FC = () => {
 
           {/* 2-я колонка: Подключение магазинов */}
           <Col xs={24} sm={24} md={8} style={{ minWidth: "300px" }}>
-            <Card
-              className="account-card"
-              title="Подключение магазинов"
-              style={cardStyle}
-            >
+            <Card className="account-card" title="Подключение магазинов" style={cardStyle}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                 <Button
+                  type={ozonClientId && ozonApiKey ? "primary" : "default"}
                   onClick={() => {
                     setSelectedStore("OZON");
                     setStoreModalVisible(true);
                   }}
                 >
-                  OZON
+                  OZON{" "}
+                  {ozonClientId && ozonApiKey ? (
+                    <span style={{ fontSize: "12px", marginLeft: "8px" }}>Активно</span>
+                  ) : null}
                 </Button>
                 <Button
                   onClick={() => {
@@ -194,19 +315,28 @@ const Account: React.FC = () => {
           open={storeModalVisible}
           onCancel={() => setStoreModalVisible(false)}
           footer={[
-            <Button
-              key="connect"
-              type="primary"
-              onClick={() => {
-                message.success(`Магазин ${selectedStore} подключен`);
-                setStoreModalVisible(false);
-              }}
-            >
+            <Button key="connect" type="primary" onClick={connectStore}>
               Подключить
             </Button>,
           ]}
         >
-          <p>Нажмите «Подключить» для подключения магазина {selectedStore}.</p>
+          {selectedStore === "OZON" ? (
+            <>
+              <Input
+                placeholder="Введите ozon_client_id"
+                value={ozonClientId}
+                onChange={(e) => setOzonClientId(e.target.value)}
+                style={{ marginBottom: 10 }}
+              />
+              <Input
+                placeholder="Введите ozon_api_key"
+                value={ozonApiKey}
+                onChange={(e) => setOzonApiKey(e.target.value)}
+              />
+            </>
+          ) : (
+            <p>Нажмите «Подключить» для подключения магазина {selectedStore}.</p>
+          )}
         </Modal>
 
         {/* Модальное окно для оплаты картой */}

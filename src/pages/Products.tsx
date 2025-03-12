@@ -89,9 +89,6 @@ const CREATE_PRODUCT = gql`
   }
 `;
 
-const date = new Date(1739713778469);
-console.log(date.toLocaleString());
-
 const ALL_COLUMNS = [
   { title: "ID", dataIndex: "id", key: "id" },
   { title: "Название", dataIndex: "name", key: "name" },
@@ -140,18 +137,36 @@ const ALL_COLUMNS = [
 ];
 
 const ProductsTable: React.FC = () => {
-  // Хуки вызываются в начале компонента
+  // Извлекаем токен и userId из localStorage
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
   const [selectedColumns, setSelectedColumns] = useState(
     ALL_COLUMNS.map((col) => col.key)
   );
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [form] = Form.useForm();
 
-  // Apollo hooks для получения и создания продуктов
+  // Передаем в запрос фильтр по user_id, если userId существует
   const { loading, error, data, refetch } = useQuery(GET_PRODUCTS, {
-    variables: { orderBy: "name", orderDir: "ASC", filter: {} },
+    variables: {
+      orderBy: "name",
+      orderDir: "ASC",
+      filter: userId ? { user_id: parseInt(userId) } : {},
+    },
+    context: {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    },
   });
+
   const [createProduct] = useMutation(CREATE_PRODUCT, {
+    context: {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    },
     onCompleted: () => {
       refetch();
       setDrawerVisible(false);
@@ -162,7 +177,6 @@ const ProductsTable: React.FC = () => {
     },
   });
 
-  // Лоадер по центру страницы, если данные загружаются
   if (loading) {
     return (
       <div
@@ -179,12 +193,10 @@ const ProductsTable: React.FC = () => {
   }
   if (error) return <p>Ошибка: {error.message}</p>;
 
-  // Фильтрация столбцов на основе выбранных пользователем значений
   const columns = ALL_COLUMNS.filter((col) =>
     selectedColumns.includes(col.key)
   );
 
-  // Функция создания продукта через Drawer
   const handleCreate = (values: any) => {
     createProduct({
       variables: {
@@ -205,7 +217,6 @@ const ProductsTable: React.FC = () => {
     });
   };
 
-  // Контент для Popover с выбором столбцов (спрятан за кнопкой с иконкой шестерёнки)
   const columnSelectContent = (
     <Select
       mode="multiple"

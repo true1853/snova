@@ -1,6 +1,6 @@
 // server.js
 
-// Полифилы и прочие настройки (без изменений)
+// Полифил для globalThis (если не определён)
 if (typeof globalThis === 'undefined') {
   Object.defineProperty(global, 'globalThis', { value: global });
 }
@@ -32,8 +32,11 @@ graphql.getLocation = function(source, pos) {
 
 const { ApolloServer, gql } = require('apollo-server');
 const pool = require('./db');
+const jwt = require('jsonwebtoken');
 
-// Определяем пользовательский скаляр Date с форматом "YYYY-MM-DD HH:mm:ss"
+// Секретный ключ для подписи JWT (лучше хранить в переменных окружения)
+const SECRET_KEY = process.env.SECRET_KEY || 'your-very-secret-key';
+
 const { GraphQLScalarType, Kind } = require("graphql");
 const DateScalar = new GraphQLScalarType({
   name: "Date",
@@ -59,7 +62,7 @@ const DateScalar = new GraphQLScalarType({
   },
 });
 
-// Определяем GraphQL-схему
+// Обновлённая GraphQL-схема
 const typeDefs = gql`
   scalar JSON
   scalar Date
@@ -106,10 +109,13 @@ const typeDefs = gql`
     email: String!
     avatar: String
     created_at: Date
+    ozon_client_id: String
+    ozon_api_key: String
   }
 
   type LoginResponse {
     token: String!
+    user: User!
   }
 
   type Query {
@@ -191,7 +197,9 @@ const typeDefs = gql`
       name: String,
       email: String,
       password: String,
-      avatar: String
+      avatar: String,
+      ozon_client_id: String,
+      ozon_api_key: String
     ): User!
 
     deleteUser(id: ID!): Boolean!
@@ -203,22 +211,31 @@ const typeDefs = gql`
   }
 `;
 
+// Резолверы
 const resolvers = {
   Date: DateScalar,
   Query: {
-    // Здесь ваши резолверы для получения данных, например:
-    products: async (_, { orderBy, orderDir, filter }) => {
+    // Получаем только товары, принадлежащие авторизованному пользователю
+    products: async (_, { orderBy, orderDir, filter }, context) => {
       let query = "SELECT * FROM products";
       const params = [];
+      const conditions = [];
+      // Если пользователь авторизован, фильтруем по user_id
+      if (context.user && context.user.id) {
+        conditions.push(`user_id = $${params.length + 1}`);
+        params.push(context.user.id);
+      }
       if (filter && typeof filter === "object") {
         const filterKeys = Object.keys(filter);
-        if (filterKeys.length > 0) {
-          const conditions = filterKeys.map((key, index) => {
+        filterKeys.forEach((key) => {
+          if (filter[key] !== undefined && filter[key] !== "") {
+            conditions.push(`${key} = $${params.length + 1}`);
             params.push(filter[key]);
-            return `${key} = $${index + 1}`;
-          });
-          query += " WHERE " + conditions.join(" AND ");
-        }
+          }
+        });
+      }
+      if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ");
       }
       if (orderBy) {
         const allowedColumns = ["name", "price", "created_at", "stock_quantity"];
@@ -231,7 +248,8 @@ const resolvers = {
       const { rows } = await pool.query(query, params);
       return rows;
     },
-    product: async (_, { id }) => {
+    product: async (_, { id }, context) => {
+      // При запросе одного товара можно также добавить проверку прав доступа
       const { rows } = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
       return rows[0];
     },
@@ -248,20 +266,28 @@ const resolvers = {
       return rows;
     },
     users: async () => {
-      const { rows } = await pool.query("SELECT id, name, email, avatar, created_at FROM users");
+      const { rows } = await pool.query(
+        "SELECT id, name, email, avatar, created_at, ozon_client_id, ozon_api_key FROM users"
+      );
       return rows;
     },
     user: async (_, { id }) => {
-      const { rows } = await pool.query("SELECT id, name, email, avatar, created_at FROM users WHERE id = $1", [id]);
+      const { rows } = await pool.query(
+        "SELECT id, name, email, avatar, created_at, ozon_client_id, ozon_api_key FROM users WHERE id = $1",
+        [id]
+      );
       return rows[0];
     },
   },
   Mutation: {
-    createProduct: async (_, args) => {
+    createProduct: async (_, args, context) => {
+      if (!context.user || !context.user.id) {
+        throw new Error("Not authenticated");
+      }
       const query = `
         INSERT INTO products 
-          (name, description, sku, barcode, price, currency, discount_price, stock_quantity, availability_status, category_id, brand, attributes, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          (name, description, sku, barcode, price, currency, discount_price, stock_quantity, availability_status, category_id, brand, attributes, is_active, user_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING *
       `;
       const values = [
@@ -278,11 +304,12 @@ const resolvers = {
         args.brand,
         args.attributes,
         args.is_active !== undefined ? args.is_active : true,
+        context.user.id,
       ];
       const { rows } = await pool.query(query, values);
       return rows[0];
     },
-    updateProduct: async (_, { id, ...args }) => {
+    updateProduct: async (_, { id, ...args }, context) => {
       let idx = 1;
       const updates = [];
       const values = [];
@@ -293,9 +320,7 @@ const resolvers = {
         }
       }
       values.push(id);
-      const query = `UPDATE products SET ${updates.join(
-        ", "
-      )} WHERE id = $${idx} RETURNING *`;
+      const query = `UPDATE products SET ${updates.join(", ")} WHERE id = $${idx} RETURNING *`;
       const { rows } = await pool.query(query, values);
       return rows[0];
     },
@@ -350,24 +375,24 @@ const resolvers = {
       const query = `
         INSERT INTO users (name, email, password, avatar)
         VALUES ($1, $2, $3, $4)
-        RETURNING id, name, email, avatar, created_at
+        RETURNING id, name, email, avatar, created_at, ozon_client_id, ozon_api_key
       `;
       const { rows } = await pool.query(query, [name, email, password, avatar]);
       return rows[0];
     },
-    updateUser: async (_, { id, name, email, password, avatar }) => {
+    updateUser: async (_, { id, name, email, password, avatar, ozon_client_id, ozon_api_key }) => {
       let idx = 1;
       const updates = [];
       const values = [];
-      if (name !== undefined) {
+      if (name !== undefined && name !== "") {
         updates.push(`name = $${idx++}`);
         values.push(name);
       }
-      if (email !== undefined) {
+      if (email !== undefined && email !== "") {
         updates.push(`email = $${idx++}`);
         values.push(email);
       }
-      if (password !== undefined) {
+      if (password !== undefined && password !== "") {
         updates.push(`password = $${idx++}`);
         values.push(password);
       }
@@ -375,8 +400,16 @@ const resolvers = {
         updates.push(`avatar = $${idx++}`);
         values.push(avatar);
       }
+      if (ozon_client_id !== undefined && ozon_client_id !== "") {
+        updates.push(`ozon_client_id = $${idx++}`);
+        values.push(ozon_client_id);
+      }
+      if (ozon_api_key !== undefined && ozon_api_key !== "") {
+        updates.push(`ozon_api_key = $${idx++}`);
+        values.push(ozon_api_key);
+      }
       values.push(id);
-      const query = `UPDATE users SET ${updates.join(", ")} WHERE id = $${idx} RETURNING id, name, email, avatar, created_at`;
+      const query = `UPDATE users SET ${updates.join(", ")} WHERE id = $${idx} RETURNING id, name, email, avatar, created_at, ozon_client_id, ozon_api_key`;
       const { rows } = await pool.query(query, values);
       return rows[0];
     },
@@ -393,7 +426,8 @@ const resolvers = {
       if (user.password !== password) {
         throw new Error("Неверный пароль");
       }
-      return { token: "dummy-token-for-demo" };
+      const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: "1h" });
+      return { token, user };
     },
   },
   Product: {
@@ -421,13 +455,30 @@ const resolvers = {
   },
 };
 
+// Создаем Apollo Server с контекстом, который извлекает пользователя из JWT
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: ({ req }) => {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (token) {
+      try {
+        const user = jwt.verify(token, SECRET_KEY);
+        return { user };
+      } catch (error) {
+        console.error("Ошибка верификации JWT:", error);
+      }
+    }
+    return {};
+  },
   plugins: [
     {
       requestDidStart(requestContext) {
-        if (requestContext.request.query && typeof requestContext.request.query !== "string") {
+        if (
+          requestContext.request.query &&
+          typeof requestContext.request.query !== "string"
+        ) {
           requestContext.request.query = String(requestContext.request.query);
         }
         return {};

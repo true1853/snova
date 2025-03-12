@@ -1,97 +1,40 @@
-/* ========================================================================== */
-/* Normalize.css – базовые стили для согласованного отображения во всех браузерах */
-/* ========================================================================== */
+/* ==========================================================================
+   Normalize & базовые стили
+   ========================================================================== */
 
-/* Задаём стандартный межстрочный интервал и предотвращаем изменение размера текста */
-html {
-    line-height: 1.15; /* Исправление межстрочного интервала */
-    -webkit-text-size-adjust: 100%; /* Предотвращение масштабирования текста на iOS */
+   html {
+    line-height: 1.15;
+    -webkit-text-size-adjust: 100%;
   }
   
-  /* Убираем отступы по умолчанию */
   body {
     margin: 0;
+    position: relative;
+    background: #131313;
+    font-family: "Montserrat-Regular", sans-serif;
   }
   
-  /* Элемент main всегда отображается как блок (для IE) */
   main {
     display: block;
   }
   
-  /* Стили для заголовков */
-  h1 {
-    font-size: 2em;
-    margin: 0.67em 0;
+  /* Элементы заголовков, параграфов, изображений и ссылок */
+  h1, h2, h3, h4, p {
+    margin: 0;
   }
-  
-  /* Стили для горизонтальной линии */
-  hr {
-    box-sizing: content-box;
-    height: 0;
-    overflow: visible;
-  }
-  
-  /* Стили для элемента pre */
-  pre {
-    font-family: monospace, monospace;
-    font-size: 1em;
-  }
-  
-  /* Стили для ссылок */
   a {
     background-color: transparent;
+    text-decoration: none;
   }
-  
-  /* Стили для аббревиатур с атрибутом title */
-  abbr[title] {
-    border-bottom: none;
-    text-decoration: underline dotted;
-  }
-  
-  /* Жирное начертание для b и strong */
-  b,
-  strong {
-    font-weight: bolder;
-  }
-  
-  /* Стили для элементов кода */
-  code,
-  kbd,
-  samp {
-    font-family: monospace, monospace;
-    font-size: 1em;
-  }
-  
-  /* Размер шрифта для мелкого текста */
-  small {
-    font-size: 80%;
-  }
-  
-  /* Стили для sub и sup */
-  sub,
-  sup {
-    font-size: 75%;
-    line-height: 0;
-    position: relative;
-    vertical-align: baseline;
-  }
-  sub {
-    bottom: -0.25em;
-  }
-  sup {
-    top: -0.5em;
-  }
-  
-  /* Убираем рамку у изображений внутри ссылок (для IE 10) */
   img {
-    border-style: none;
+    max-width: 100%;
   }
   
-  /* ========================================================================== */
-  /* Общие стили для форм */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Общие стили форм и элементов управления
+     ========================================================================== */
   
-  /* Наследование шрифтов, размеров и отступов для элементов формы */
+  /* Стили для форм, кнопок, инпутов и пр. (оставлены без изменений) */
   button,
   input,
   optgroup,
@@ -101,9 +44,6 @@ html {
     font-size: 100%;
     line-height: 1.15;
     margin: 0;
-  }
-  button,
-  input {
     overflow: visible;
   }
   button,
@@ -116,7 +56,6 @@ html {
   [type="submit"] {
     -webkit-appearance: button;
   }
-  /* Убираем внутренние отступы и границы для кнопок в Firefox */
   button::-moz-focus-inner,
   [type="button"]::-moz-focus-inner,
   [type="reset"]::-moz-focus-inner,
@@ -124,18 +63,15 @@ html {
     border-style: none;
     padding: 0;
   }
-  /* Восстанавливаем стили фокуса для кнопок в Firefox */
   button:-moz-focusring,
   [type="button"]:-moz-focusring,
   [type="reset"]:-moz-focusring,
   [type="submit"]:-moz-focusring {
     outline: 1px dotted ButtonText;
   }
-  /* Отступы для fieldset */
   fieldset {
     padding: 0.35em 0.75em 0.625em;
   }
-  /* Стили для legend */
   legend {
     box-sizing: border-box;
     color: inherit;
@@ -144,26 +80,21 @@ html {
     padding: 0;
     white-space: normal;
   }
-  /* Стили для progress */
   progress {
     vertical-align: baseline;
   }
-  /* Скроллбар для textarea */
   textarea {
     overflow: auto;
   }
-  /* Стили для чекбоксов и радио кнопок */
   [type="checkbox"],
   [type="radio"] {
     box-sizing: border-box;
     padding: 0;
   }
-  /* Стили для внутренних спин-кнопок в input[type="number"] */
   [type="number"]::-webkit-inner-spin-button,
   [type="number"]::-webkit-outer-spin-button {
     height: auto;
   }
-  /* Стили для input[type="search"] */
   [type="search"] {
     -webkit-appearance: textfield;
     outline-offset: -2px;
@@ -171,34 +102,15 @@ html {
   [type="search"]::-webkit-search-decoration {
     -webkit-appearance: none;
   }
-  /* Стили для кнопки загрузки файлов в Webkit */
   ::-webkit-file-upload-button {
     -webkit-appearance: button;
     font: inherit;
   }
   
-  /* ========================================================================== */
-  /* Дополнительные базовые стили для браузера */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Подключение шрифтов
+     ========================================================================== */
   
-  details {
-    display: block;
-  }
-  summary {
-    display: list-item;
-  }
-  template {
-    display: none;
-  }
-  [hidden] {
-    display: none;
-  }
-  
-  /* ========================================================================== */
-  /* Стили из style.css – подключение шрифтов и общие оформления */
-  /* ========================================================================== */
-  
-  /* Подключение шрифтов */
   @font-face {
     font-family: "NeueMachina-Regular";
     src: url("../fonts/NeueMachina-Regular.woff2") format("woff2"),
@@ -236,18 +148,11 @@ html {
     font-weight: 700;
   }
   
-  /* Общие стили для всех элементов */
-  * {
-    box-sizing: border-box;
-  }
+  /* ==========================================================================
+     Декоративные элементы и контейнер
+     ========================================================================== */
   
-  body {
-    position: relative;
-    background: #131313;
-  }
-  
-  /* Стили для декоративных линий на фоне */
-  body .lines {
+  .lines {
     position: absolute;
     top: 0;
     bottom: 0;
@@ -260,37 +165,24 @@ html {
     justify-content: space-between;
     pointer-events: none;
   }
-  body .lines > div {
+  .lines > div {
     flex-basis: 15.2%;
     outline: 1px solid rgba(255, 255, 255, 0.1);
   }
   
-  /* Стили для ссылок и изображений */
-  a {
-    text-decoration: none;
-  }
-  img {
-    max-width: 100%;
-  }
-  
-  /* Стили для заголовков и параграфов */
-  h1, h2, h3, h4 {
-    margin: 0;
-  }
-  p {
-    margin: 0;
-  }
-  
-  /* Контейнер для центровки контента */
+  /* Универсальный контейнер */
   .container {
-    max-width: 1400px;
-    padding: 0 120px;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
   }
   
-  /* Стили для шапки (header) */
+  /* ==========================================================================
+     Шапка (header)
+     ========================================================================== */
+  
   .header {
-    /* Путь к фоновому изображению обновлён: теперь ищется в assets/imgLanding/bg */
     background: url(../assets/imgLanding/bg/bg.png);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
@@ -299,56 +191,46 @@ html {
     text-align: center;
   }
   
-  /* ========================================================================== */
-  /* Стили для основного контента страницы */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Основной контент страницы
+     ========================================================================== */
   
-  /* Общие стили для секций внутри основного контента */
   .main__content section {
     padding: 80px 0 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   
-  /* Стили для заголовков секций */
   .main__content section h2 {
-    margin: 0 0 20px;
+    margin-bottom: 20px;
     font-family: "NeueMachina-Regular", sans-serif;
     font-weight: 400;
     font-size: 48px;
     line-height: 1;
     color: #ffffff;
+    text-align: center;
   }
   .main__content section h2 .highlighted {
     font-family: "NeueMachina-Ultrabold", sans-serif;
     font-weight: 800;
     color: #8FFF00;
   }
-  @media screen and (max-width: 426px) {
-    .main__content section h2 {
-      font-size: 28px;
-    }
-  }
   
-  /* Стили для параграфов секций */
   .main__content section p {
     font-family: "Montserrat-Regular", sans-serif;
     font-weight: 400;
     font-size: 24px;
     line-height: 1.2;
     color: #ffffff;
+    text-align: center;
+    margin-bottom: 20px;
   }
   .main__content section p .highlighted {
     font-family: "Montserrat-SemiBold", sans-serif;
     font-weight: 600;
     color: #8FFF00;
   }
-  @media screen and (max-width: 426px) {
-    .main__content section p {
-      font-size: 16px;
-    }
-  }
   
-  /* Стили для кнопок в секциях */
+  /* Кнопки */
   .main__content section .button {
     display: inline-block;
     min-width: 252px;
@@ -358,30 +240,25 @@ html {
     font-size: 24px;
     line-height: 1.2;
     color: #111017;
-    text-align: center;
     background: rgba(255, 255, 255, 0.5);
     border: 1px solid #ffffff;
     border-radius: 100px;
-    transition: all ease-out 0.3s;
+    transition: all 0.3s ease-out;
     -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
+    text-align: center;
   }
   .main__content section .button:hover {
     background: white;
   }
-  @media screen and (max-width: 426px) {
-    .main__content section .button {
-      font-size: 16px;
-    }
-  }
   
-  /* ========================================================================== */
-  /* Стили для конкретных секций (welcome, marketplaces, advantages, и т.д.) */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Секции: welcome, marketplaces, advantages, are-you-ready, be-the-best, composition,
+     any-level, learn-more
+     ========================================================================== */
   
-  /* Секция "welcome" */
+  /* Пример секции "welcome" */
   .main__content section.welcome {
-    /* Фоновое изображение перенесено в assets/imgLanding/bg */
     background: url(../assets/imgLanding/bg/bg-1.png) center/auto no-repeat;
   }
   .main__content section.welcome .content {
@@ -391,12 +268,9 @@ html {
   }
   .main__content section.welcome .content h2 {
     max-width: 630px;
-    text-align: center;
   }
   .main__content section.welcome .content p {
     max-width: 900px;
-    margin: 0 0 20px;
-    text-align: center;
   }
   .main__content section.welcome .content .screenshot {
     position: relative;
@@ -437,9 +311,6 @@ html {
   .main__content section.advantages {
     background: url(../assets/imgLanding/bg/bg.png);
   }
-  .main__content section.advantages .content h2 {
-    text-align: center;
-  }
   .main__content section.advantages .content .cards {
     display: flex;
     flex-wrap: wrap;
@@ -447,25 +318,18 @@ html {
     padding-bottom: 40px;
   }
   .main__content section.advantages .content .card {
-    width: 32.2%;
     margin-top: 20px;
     padding: 20px;
-    background: linear-gradient(5deg, rgba(255,255,255,0.2) 4.99%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(5deg, rgba(255,255,255,0.2) 5%, rgba(255,255,255,0) 100%);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 20px;
   }
   .main__content section.advantages .content .card h4 {
-    margin: 0 0 18px;
+    margin-bottom: 18px;
     font-family: "Montserrat-Bold", sans-serif;
     font-weight: 700;
     font-size: 24px;
-    line-height: 1.2;
     color: #8FFF00;
-  }
-  @media screen and (max-width: 426px) {
-    .main__content section.advantages .content .card h4 {
-      font-size: 16px;
-    }
   }
   
   /* Секция "are-you-ready" */
@@ -478,38 +342,6 @@ html {
     align-items: center;
     padding-bottom: 150px;
   }
-  .main__content section.are-you-ready .content h2 {
-    text-align: center;
-  }
-  .main__content section.are-you-ready .content p {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  .main__content section.are-you-ready .content .button {
-    display: inline-block;
-    min-width: 252px;
-    padding: 12px 24px;
-    font-family: "Montserrat-Medium", sans-serif;
-    font-weight: 500;
-    font-size: 24px;
-    line-height: 1.2;
-    color: #111017;
-    text-align: center;
-    background: rgba(255,255,255,0.5);
-    border: 1px solid #ffffff;
-    border-radius: 100px;
-    transition: all ease-out 0.3s;
-    -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-  }
-  .main__content section.are-you-ready .content .button:hover {
-    background: white;
-  }
-  @media screen and (max-width: 426px) {
-    .main__content section.are-you-ready .content .button {
-      font-size: 16px;
-    }
-  }
   
   /* Секция "be-the-best" */
   .main__content section.be-the-best {
@@ -517,10 +349,9 @@ html {
   }
   .main__content section.be-the-best .content {
     position: relative;
-    padding: 0 0 100px;
+    padding-bottom: 100px;
   }
   .main__content section.be-the-best .content::after {
-    /* Путь к стрелке обновлён */
     content: url(../assets/imgLanding/arrow.png);
     position: absolute;
     top: -60px;
@@ -537,9 +368,6 @@ html {
   .main__content section.composition {
     background: url(../assets/imgLanding/bg/bg.png);
   }
-  .main__content section.composition .content h2 {
-    text-align: center;
-  }
   .main__content section.composition .content .cards {
     display: flex;
     flex-wrap: wrap;
@@ -550,7 +378,7 @@ html {
     width: 49.1%;
     margin-top: 20px;
     padding: 20px;
-    background: linear-gradient(5deg, rgba(255,255,255,0.2) 4.99%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(5deg, rgba(255,255,255,0.2) 5%, rgba(255,255,255,0) 100%);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 20px;
   }
@@ -566,13 +394,7 @@ html {
     font-family: "Montserrat-Bold", sans-serif;
     font-weight: 700;
     font-size: 24px;
-    line-height: 1.2;
     color: #8FFF00;
-  }
-  @media screen and (max-width: 426px) {
-    .main__content section.composition .content .card > div h4 {
-      font-size: 16px;
-    }
   }
   
   /* Секция "any-level" */
@@ -581,9 +403,6 @@ html {
   }
   .main__content section.any-level .content {
     padding-bottom: 600px;
-  }
-  .main__content section.any-level .content h2 {
-    text-align: center;
   }
   .main__content section.any-level .content .level-control {
     position: relative;
@@ -604,6 +423,8 @@ html {
     z-index: 10;
     background: #131313;
     border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease-out;
   }
   .main__content section.any-level .content .level-control .selector span {
     display: flex;
@@ -612,25 +433,14 @@ html {
     width: 80px;
     height: 80px;
     font-family: "NeueMachina-Regular", sans-serif;
-    font-weight: 400;
     font-size: 48px;
-    line-height: 1;
     color: #8FFF00;
-    background: linear-gradient(48deg, rgba(143,255,0,0.2) -98.23%, rgba(143,255,0,0) 97.63%);
+    background: linear-gradient(48deg, rgba(143,255,0,0.2) -98%, rgba(143,255,0,0) 98%);
     border: 1px solid #8FFF00;
     border-radius: 20px;
-    cursor: pointer;
-    transition: all ease-out 0.3s;
+    transition: all 0.3s ease-out;
   }
-  @media screen and (max-width: 426px) {
-    .main__content section.any-level .content .level-control .selector span {
-      font-size: 28px;
-    }
-  }
-  .main__content section.any-level .content .level-control .selector span:hover {
-    color: #131313;
-    background: #ffffff;
-  }
+  .main__content section.any-level .content .level-control .selector span:hover,
   .main__content section.any-level .content .level-control .selector span.selected {
     color: #131313;
     background: #ffffff;
@@ -639,20 +449,8 @@ html {
     position: absolute;
     bottom: -40px;
   }
-  .main__content section.any-level .content .level-control .selector:nth-child(1) p {
-    left: -15px;
-  }
-  .main__content section.any-level .content .level-control .selector:nth-child(2) p {
-    left: -47px;
-  }
-  .main__content section.any-level .content .level-control .selector:nth-child(3) p {
-    left: -11px;
-  }
   .main__content section.any-level .content .levels {
     position: relative;
-  }
-  .main__content section.any-level .content .levels .hidden {
-    opacity: 0 !important;
   }
   .main__content section.any-level .content .levels .level {
     padding-bottom: 150px;
@@ -660,17 +458,7 @@ html {
     top: 80px;
     left: 0;
     right: 0;
-    opacity: 1;
     transition: all 0.4s;
-  }
-  .main__content section.any-level .content .levels .level-1 {
-    background: url(../assets/imgLanding/bg/bg-41.png) top -400px right -80px/cover no-repeat;
-  }
-  .main__content section.any-level .content .levels .level-2 {
-    background: url(../assets/imgLanding/bg/bg-42.png) top -400px right -80px/cover no-repeat;
-  }
-  .main__content section.any-level .content .levels .level-3 {
-    background: url(../assets/imgLanding/bg/bg-43.png) top -400px right -80px/cover no-repeat;
   }
   .main__content section.any-level .content .levels .level-content {
     max-width: 66.1%;
@@ -680,13 +468,7 @@ html {
     font-family: "Montserrat-Bold", sans-serif;
     font-weight: 700;
     font-size: 48px;
-    line-height: 1;
     color: #ffffff;
-  }
-  @media screen and (max-width: 426px) {
-    .main__content section.any-level .content .levels .level-content h3 {
-      font-size: 28px;
-    }
   }
   .main__content section.any-level .content .levels .level-content .cards {
     display: flex;
@@ -698,12 +480,11 @@ html {
     width: 48.8%;
     margin-top: 18px;
     padding: 56px 20px 20px;
-    background: linear-gradient(5deg, rgba(255,255,255,0.2) 4.99%, rgba(255,255,255,0) 100%);
+    background: linear-gradient(5deg, rgba(255,255,255,0.2) 5%, rgba(255,255,255,0) 100%);
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 20px;
   }
   .main__content section.any-level .content .levels .level-content .card::after {
-    /* Путь к иконке переключения обновлён */
     content: url("../assets/imgLanding/switch.svg");
     position: absolute;
     top: 20px;
@@ -720,42 +501,10 @@ html {
     align-items: center;
     padding-bottom: 80px;
   }
-  .main__content section.learn-more .content h2 {
-    text-align: center;
-  }
-  .main__content section.learn-more .content p {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  .main__content section.learn-more .content .button {
-    display: inline-block;
-    min-width: 252px;
-    padding: 12px 24px;
-    font-family: "Montserrat-Medium", sans-serif;
-    font-weight: 500;
-    font-size: 24px;
-    line-height: 1.2;
-    color: #111017;
-    text-align: center;
-    background: rgba(255,255,255,0.5);
-    border: 1px solid #ffffff;
-    border-radius: 100px;
-    transition: all ease-out 0.3s;
-    -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-  }
-  .main__content section.learn-more .content .button:hover {
-    background: white;
-  }
-  @media screen and (max-width: 426px) {
-    .main__content section.learn-more .content .button {
-      font-size: 16px;
-    }
-  }
   
-  /* ========================================================================== */
-  /* Стили для всплывающего окна (popup) */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Popup окно
+     ========================================================================== */
   
   .popup-wrapper {
     display: none;
@@ -766,9 +515,8 @@ html {
     height: 100%;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 100;
     background: rgba(0, 0, 0, 0.6);
+    z-index: 100;
   }
   .popup-wrapper .popup {
     position: relative;
@@ -781,10 +529,10 @@ html {
   }
   .popup-wrapper .popup .close {
     position: absolute;
-    width: 16px;
-    height: 16px;
     top: 32px;
     right: 32px;
+    width: 16px;
+    height: 16px;
     cursor: pointer;
   }
   .popup-wrapper .popup .heading,
@@ -793,15 +541,8 @@ html {
     font-family: "Montserrat-Bold", sans-serif;
     font-weight: 700;
     font-size: 24px;
-    line-height: 1.2;
-    color: #000000;
+    color: #000;
     text-align: center;
-  }
-  @media screen and (max-width: 426px) {
-    .popup-wrapper .popup .heading,
-    .popup-wrapper .popup .success {
-      font-size: 16px;
-    }
   }
   .popup-wrapper .popup .success {
     display: none;
@@ -812,19 +553,17 @@ html {
   }
   .popup-wrapper .popup form input {
     font-family: "Montserrat-Regular", sans-serif;
-    font-weight: 400;
     font-size: 18px;
-    line-height: 1;
     text-align: center;
     padding: 8px;
     margin-top: 18px;
     border: none;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
   }
   .popup-wrapper .popup form input:focus,
   .popup-wrapper .popup form input:focus-visible {
     outline: none;
-    border-bottom: 1px solid #000000;
+    border-bottom: 1px solid #000;
   }
   .popup-wrapper .popup form button {
     margin-top: 40px;
@@ -833,36 +572,23 @@ html {
     border: none;
     border-radius: 100px;
     font-family: "Montserrat-Medium", sans-serif;
-    font-weight: 500;
     font-size: 18px;
-    line-height: 1;
-    text-align: center;
     cursor: pointer;
   }
   
-  /* ========================================================================== */
-  /* Дополнительные стили для компонента LandingLayout */
-  /* ========================================================================== */
+  /* ==========================================================================
+     Дополнительные стили для LandingLayout компонента
+     ========================================================================== */
   
-  /* Основной контейнер для лендинга */
   .landing-layout {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #131313;
-    color: #ffffff;
-    font-family: "Montserrat-Regular", sans-serif;
+    background: #131313;
+    color: #fff;
   }
   
-  /* Контейнер для центровки контента внутри лендинга */
-  .landing-layout .container {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 120px;
-  }
-  
-  /* Адаптивные отступы для контейнера */
+  /* Адаптивные отступы контейнера */
   @media screen and (max-width: 1024px) {
     .landing-layout .container {
       padding: 0 60px;
@@ -872,5 +598,71 @@ html {
     .landing-layout .container {
       padding: 0 20px;
     }
+  }
+  
+  /* ==========================================================================
+     Media Queries для мобильных устройств и планшетов
+     ========================================================================== */
+  
+  @media (max-width: 767px) {
+    .header__content img {
+      max-width: 150px;
+    }
+    .main__content {
+      padding: 20px 0;
+    }
+    .welcome h2 {
+      font-size: 24px;
+    }
+    .welcome p {
+      font-size: 16px;
+    }
+    .marketplaces .content {
+      justify-content: center;
+    }
+    .marketplaces .item {
+      flex: 1 1 40%;
+      max-width: 40%;
+      margin: 10px;
+    }
+    /* Карточки растягиваем на 100% ширины для мобильных */
+    .advantages .card,
+    .composition .card,
+    .any-level .card {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .any-level .level-control {
+      flex-direction: column;
+    }
+  }
+  
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+      max-width: 960px;
+    }
+    .welcome h2 {
+      font-size: 28px;
+    }
+    .welcome p {
+      font-size: 18px;
+    }
+    .marketplaces .item {
+      flex: 1 1 30%;
+      max-width: 30%;
+      margin: 10px;
+    }
+    /* При необходимости можно установить ширину карточек для планшетов */
+    .advantages .card,
+    .composition .card,
+    .any-level .card {
+      width: 100%;
+    }
+  }
+  
+  /* Секция для растяжения карточек на всю ширину, если нужно */
+  .full-width-section .cards {
+    width: 100%;
+    padding: 0 20px;
   }
   
